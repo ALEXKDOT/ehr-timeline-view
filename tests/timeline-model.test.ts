@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import test from "node:test";
 import { events, medications, patient, categoryMeta, type Category, type TimelineEvent } from "../app/clinical-data.ts";
-import { DAY, stamp, isoDate, formatDate, fullRange, clampRange, zoomRange, panRange,
+import { DAY, stamp, isoDate, formatDate, fullRange, clampRange, zoomRange, panRange, adjustOverviewRange,
   filterEvents, groupEvents, medicationEvidence, relatedMedicationEvents } from "../app/timeline-model.ts";
 
 const categories = Object.keys(categoryMeta) as Category[];
@@ -53,6 +53,34 @@ test("zoom preserves the central date when possible and stays within record boun
   assert.equal(narrow.end - narrow.start, DAY);
   const edge = zoomRange({ start: fullRange.start, end: fullRange.start + 10 * DAY }, 2);
   assert.deepEqual(edge, { start: fullRange.start, end: fullRange.start + 20 * DAY });
+});
+
+test("dragging the overview preserves the interval, snaps to days and clamps at either boundary", () => {
+  const range = { start: stamp("2026-03-01"), end: stamp("2026-03-21") };
+  assert.deepEqual(adjustOverviewRange(range, "move", 2.4 * DAY), { start: stamp("2026-03-03"), end: stamp("2026-03-23") });
+  assert.deepEqual(adjustOverviewRange(range, "move", -2.4 * DAY), { start: stamp("2026-02-27"), end: stamp("2026-03-19") });
+  assert.deepEqual(adjustOverviewRange(range, "move", 999 * DAY), { start: fullRange.end - 20 * DAY, end: fullRange.end });
+  assert.deepEqual(adjustOverviewRange(range, "move", -999 * DAY), { start: fullRange.start, end: fullRange.start + 20 * DAY });
+  assert.deepEqual(adjustOverviewRange(fullRange, "move", 7 * DAY), fullRange);
+  assert.deepEqual(range, { start: stamp("2026-03-01"), end: stamp("2026-03-21") });
+});
+
+test("overview edge resizing holds the other edge fixed and cannot cross it", () => {
+  const range = { start: stamp("2026-03-01"), end: stamp("2026-03-21") };
+  assert.deepEqual(adjustOverviewRange(range, "start", 4 * DAY), { start: stamp("2026-03-05"), end: range.end });
+  assert.deepEqual(adjustOverviewRange(range, "end", -4 * DAY), { start: range.start, end: stamp("2026-03-17") });
+  assert.deepEqual(adjustOverviewRange(range, "start", -999 * DAY), { start: fullRange.start, end: range.end });
+  assert.deepEqual(adjustOverviewRange(range, "end", 999 * DAY), { start: range.start, end: fullRange.end });
+  assert.deepEqual(adjustOverviewRange(range, "start", 999 * DAY), { start: range.end, end: range.end });
+  assert.deepEqual(adjustOverviewRange(range, "end", -999 * DAY), { start: range.start, end: range.start });
+});
+
+test("a single-day overview selection can move and expand without losing its calendar date", () => {
+  const day = { start: stamp("2026-03-14"), end: stamp("2026-03-14") };
+  assert.deepEqual(adjustOverviewRange(day, "move", DAY), { start: stamp("2026-03-15"), end: stamp("2026-03-15") });
+  assert.deepEqual(adjustOverviewRange(day, "start", -DAY), { start: stamp("2026-03-13"), end: day.end });
+  assert.deepEqual(adjustOverviewRange(day, "end", DAY), { start: day.start, end: stamp("2026-03-15") });
+  assert.deepEqual(adjustOverviewRange(day, "move", NaN), day);
 });
 
 test("clusters retain all 94 records exactly once, chronologically, at every supported density", () => {

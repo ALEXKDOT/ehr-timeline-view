@@ -8,13 +8,13 @@ The demonstration follows **Maya Bennett**, a fictional 42-year-old patient, fro
 
 ## Review the clinical course
 
-The desktop timeline puts six record tracks and medication evidence on one **linear calendar axis**. A compact activity overview shows the full six-month record and the current date window. Select a month or activity bar, enter a date range, choose 30 days, zoom, pan, or return to **Overview**.
+The desktop timeline puts six record tracks and medication evidence on one **linear calendar axis**. A compact activity overview shows the full six-month record and the current date window. Drag the blue view window to move the displayed period. Drag its left or right handle to change that date boundary. The controls snap to calendar days. You can also select a month, click outside the window to recenter it, enter exact dates, choose 30 days, or return to **Overview**.
 
 Dense periods become numbered groups. Opening a group reveals every included record and offers a closer date window. Search and category filters keep their results connected to the chronology; counts distinguish entries in the current window from matches elsewhere. Filtering preserves the current date window.
 
-Select a record to open the adjacent **record inspector**. It separates the summary, author and care setting, complete fictional source narrative, cautions, internal record ID, and date precision. Previous/next controls move through matching records. Hospital navigation and the seven-day context action help investigate care transitions without abandoning the timeline.
+Select a record or group to open the **record inspector** sidebar. The right-pointing arrow on its left edge collapses it; the arrow at the right edge of the workspace reopens it. Collapsing preserves the selection and releases space for the timeline. It separates the summary, author and care setting, complete fictional source narrative, cautions, internal record ID, and date precision. Previous/next controls move through matching records. Hospital navigation and the seven-day context action help investigate care transitions without abandoning the timeline.
 
-The **Record list** provides a chronological ledger with dates, categories, and summaries. This becomes the primary view on narrow screens, with the selected record below it. Medication histories remain available in both views.
+The **Record list** provides a chronological ledger with dates, categories, and summaries. This becomes the primary view on narrow screens, with the inspector opening as a drawer from the right. Medication histories remain available in both views.
 
 **Presentation** simplifies the controls and enlarges record labels for a focused review. It is a local presentation view; it does not synchronize audience windows or provide a live pointer. **Print current view** opens the browser's print dialog with application controls removed.
 
@@ -24,11 +24,12 @@ The **Record list** provides a chronological ledger with dates, categories, and 
 | --- | --- |
 | Search records and medication histories | Search field; `/` focuses it outside editable fields |
 | Inspect a record or group | Select its timeline marker or ledger row |
-| Move through time | Previous/next period, overview bars/months, date range, or position slider |
-| Change scale | `−`, `+`, **30d**, or **Overview** |
+| Move through time | Drag the blue overview window, select a month, enter dates, or use previous/next period |
+| Resize the visible period | Drag either overview edge; **30d** and **Overview** remain available |
+| Adjust the overview with the keyboard | Tab to its body or either handle; arrows adjust one day, Shift + arrows seven days, Home/End move to the limits |
 | Pan with the keyboard | Focus the timeline region, then use Left/Right; Home restores the overview |
-| Move between records | Inspector **Previous/Next**, or Left/Right while focus is in an event inspector |
-| Close details | Close button or Escape outside editable fields; focus returns to the originating control |
+| Move between records | Inspector **Previous/Next**, or Left/Right while the event heading has focus |
+| Collapse or reopen details | Arrow on the inspector’s left edge; Escape collapses and returns focus to the selected record |
 | Exit presentation | **Exit presentation**, or Escape when no inspector is open |
 | Print | **Print current view** |
 
@@ -56,7 +57,7 @@ npm run build
 npm test
 ```
 
-The 19 automated tests cover synthetic-data integrity, preservation of the dataset, date handling, pan/zoom bounds, complete clustering, search, medication evidence, and generated-output boundaries. The build adds TypeScript checking. Browser interaction, visual review, accessibility review, printing, and offline operation require separate checks; a successful build is not a claim of full WCAG conformance or clinical validation.
+The 22 automated tests cover synthetic-data integrity, preservation of the dataset, date handling, range movement and edge-resizing bounds, complete clustering, search, medication evidence, and generated-output boundaries. The build adds TypeScript checking. Browser interaction, visual review, accessibility review, printing, and offline operation require separate checks; a successful build is not a claim of full WCAG conformance or clinical validation.
 
 The Vite build inlines the application, styles, and bundled IBM Plex fonts into two matching output targets:
 
@@ -73,7 +74,8 @@ This remains a static React/TypeScript application built with Vite. There is no 
 | --- | --- |
 | `app/clinical-data.ts` | Synthetic patient profile, encounters, and medication evidence |
 | `app/timeline-model.ts` | Calendar ranges, search, grouping, and evidence interpretation |
-| `app/page.tsx` | Timeline, ledger, controls, and record inspector |
+| `app/page.tsx` | Timeline, ledger, controls, and collapsible record inspector |
+| `app/activity-overview.tsx` | Pointer and keyboard controls for moving and resizing the visible period |
 | `app/globals.css` / `app/fonts.css` | Responsive visual system and embedded fonts |
 | `scripts/inline-build.mjs` | Pages and offline output generation |
 | `tests/` | Data and timeline-model regression checks |

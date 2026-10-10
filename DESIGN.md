@@ -59,9 +59,9 @@ Use standard encounter names, clinical topics and factual summaries. Avoid sloga
 
 ## Interaction and responsive behavior
 
-On larger screens the timeline and inspector remain side by side. Below the side-panel breakpoint the inspector moves beneath the chronology; at phone widths the ledger becomes the primary record view. Core records, search, filters, medication history, and source reading remain available.
+The inspector starts collapsed. Selecting a group, record, or medication opens it. On larger screens it shares the workspace with the timeline; collapsing returns that width to the chart and preserves the selection. A persistent arrow on the inspector’s left rail collapses it toward the right edge. Below the side-panel breakpoint it opens as a right-side drawer; at phone widths the ledger becomes the primary record view. Core records, search, filters, medication history, and source reading remain available.
 
-Native buttons, disclosures, inputs, a date range form, and a range slider provide familiar controls. Selected and excluded states are explicit. The timeline supports keyboard panning and overview restoration; the inspector supports previous/next records, Escape, heading focus, and focus return. Empty states distinguish a period with no matches from a query with no matches anywhere.
+The blue overview window is the primary date-range control. Pointer capture supports dragging its body and either edge without losing the gesture outside the handle. Moving retains duration; resizing fixes the opposite edge. Values snap to calendar days and cannot cross or exceed the record boundary. Each part has a keyboard-accessible slider role and announces its dates. Native buttons, disclosures, inputs, and the exact-date form provide alternate controls. Selected and excluded states are explicit. The timeline supports keyboard panning and overview restoration; the inspector supports previous/next records, Escape, heading focus, and focus return. Empty states distinguish a period with no matches from a query with no matches anywhere.
 
 Presentation mode reduces control clutter and increases record-label emphasis. It is a local view of the same data. Printing removes navigation controls and retains the current record context.
 
@@ -71,7 +71,7 @@ Motion is limited to brief state feedback. Reduced-motion styling removes animat
 
 Require meaningful control names, visible keyboard focus, semantic regions, redundant category/evidence cues, and usable disclosure and empty states. Review contrast, text scaling, clipped content, keyboard order, focus recovery, and touch operation in the rendered application. A resized screenshot proves layout, not touch behavior. Keep viewport and physical-device evidence distinct.
 
-The project has 19 automated data/model/build-boundary tests. Visual, browser, print, offline, and assistive-technology checks are separate work; this document does not assert complete WCAG conformance, clinical validation, or production readiness.
+The project has 22 automated data/model/build-boundary tests. Visual, browser, print, offline, and assistive-technology checks are separate work; this document does not assert complete WCAG conformance, clinical validation, or production readiness.
 
 ## Free resources actually used
 

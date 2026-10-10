@@ -52,6 +52,16 @@ export function panRange(range: Range, delta: number, bounds: Range = fullRange)
   return clampRange({ start: current.start + delta, end: current.end + delta }, bounds);
 }
 
+/** Overview gestures snap to calendar days. Resizing keeps the opposite edge fixed. */
+export function adjustOverviewRange(range: Range, mode: 'move' | 'start' | 'end', delta: number, bounds: Range = fullRange): Range {
+  const current = clampRange(range, bounds);
+  if (!Number.isFinite(delta)) return current;
+  const days = Math.round(delta / DAY) * DAY;
+  if (mode === 'move') return panRange(current, days, bounds);
+  if (mode === 'start') return { start: Math.max(bounds.start, Math.min(current.end, current.start + days)), end: current.end };
+  return { start: current.start, end: Math.min(bounds.end, Math.max(current.start, current.end + days)) };
+}
+
 function searchableText(event: TimelineEvent): string {
   return [event.id, event.date, event.displayDate, event.title, event.short, event.summary,
     ...event.details, event.clinician, event.institution, event.medication, event.recordType, event.caution]
