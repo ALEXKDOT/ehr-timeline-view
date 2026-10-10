@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { categoryMeta, events, medications, patient, type Category, type Medication, type TimelineEvent } from "./clinical-data";
+import { categoryMeta, demoHighlights, events, medications, patient, type Category, type Medication, type TimelineEvent } from "./clinical-data";
 
 const categories = Object.keys(categoryMeta) as Category[];
 const chronologicalEvents = [...events].sort((a, b) => a.date.localeCompare(b.date));
@@ -12,22 +12,16 @@ const CARD_ROW_STEP = 152;
 const BASE_WIDTH = 6200;
 const startTime = stamp(patient.startDate);
 const endTime = stamp(patient.endDate);
-const gapStart = stamp("2022-06-02");
-const gapEnd = stamp("2022-08-23");
 
 function stamp(value: string) { return Date.parse(`${value.slice(0, 10)}T12:00:00Z`); }
 function formatDate(value: string | number, options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric" }) {
   return new Intl.DateTimeFormat("en-US", { ...options, timeZone: "UTC" }).format(new Date(typeof value === "number" ? value : stamp(value)));
 }
 function timeFraction(time: number) {
-  if (time <= gapStart) return .025 * (time - startTime) / (gapStart - startTime);
-  if (time < gapEnd) return .025 + .055 * (time - gapStart) / (gapEnd - gapStart);
-  return .08 + .92 * (time - gapEnd) / Math.max(DAY, endTime - gapEnd);
+  return (time - startTime) / Math.max(DAY, endTime - startTime);
 }
 function fractionTime(fraction: number) {
-  if (fraction <= .025) return startTime + fraction / .025 * (gapStart - startTime);
-  if (fraction < .08) return gapStart + (fraction - .025) / .055 * (gapEnd - gapStart);
-  return gapEnd + (fraction - .08) / .92 * (endTime - gapEnd);
+  return startTime + fraction * (endTime - startTime);
 }
 function position(value: string | number, width: number) {
   return 112 + Math.max(0, Math.min(1, timeFraction(typeof value === "number" ? value : stamp(value)))) * (width - 224);
@@ -78,7 +72,8 @@ function medicationLayout(medication: Medication, width: number) {
       // Labels remain readable even for a single date. The separate rail shows
       // the actual interval; the label width never represents treatment duration.
       const labelWidth = Math.min(250, Math.max(116, item.segment.label.length * 8.5 + 28));
-      const labelLeft = Math.max(12, Math.min(item.left, width - labelWidth - 12));
+      const labelInset = width >= 700 ? 202 : 12;
+      const labelLeft = Math.max(labelInset, Math.min(item.left, width - labelWidth - 12));
       const right = Math.max(labelLeft + labelWidth, item.right);
       let lane = laneEnds.findIndex((end) => end + 12 <= Math.min(labelLeft, item.left));
       if (lane === -1) lane = laneEnds.length;
@@ -90,6 +85,18 @@ function medicationLayout(medication: Medication, width: number) {
 
 function CategoryDot({ category }: { category: Category }) {
   return <i className="category-dot" style={colorStyle(categoryMeta[category].color)} aria-hidden="true" />;
+}
+
+function EntryDetails({ event }: { event: TimelineEvent }) {
+  const conversation = event.category === "message" || event.category === "telephone";
+  if (!conversation) return <div className="detail-section"><h3>{event.category === "lab" ? "Results & interpretation" : "Encounter details"}</h3><ul className="detail-list">{event.details.map((detail, index) => <li key={index}>{detail}</li>)}</ul></div>;
+  return <div className="detail-section"><h3>{event.category === "message" ? "MyChart conversation" : "Telephone encounter"}</h3><ol className="conversation-thread">{event.details.map((detail, index) => {
+    const divider = detail.indexOf(": ");
+    const speaker = divider > 0 && divider < 90 ? detail.slice(0, divider) : "Encounter note";
+    const message = divider > 0 && divider < 90 ? detail.slice(divider + 2) : detail;
+    const fromPatient = speaker.includes(patient.name) || /^patient\b/i.test(speaker);
+    return <li className={fromPatient ? "patient-message" : "team-message"} key={index}><span className="message-author">{speaker}</span><p>{message}</p></li>;
+  })}</ol></div>;
 }
 
 export default function Home() {
@@ -165,33 +172,39 @@ export default function Home() {
   return <main className="app-shell">
     <a href="#timeline-workspace" className="skip-link">Skip to clinical records</a>
     <header className="topbar">
-      <div className="brand-lockup"><div className="brand-mark" aria-hidden="true"><span /><span /><span /></div><div><h1>Clinical timeline</h1></div></div>
-      <div className="prototype-tag"><span aria-hidden="true" />Prototype</div>
+      <div className="brand-lockup"><div className="brand-mark" aria-hidden="true"><span /><span /><span /></div><div><h1>EHR Timeline View</h1></div></div>
+      <div className="prototype-tag"><span aria-hidden="true" />Fictional patient demo</div>
     </header>
 
     <section className="patient-header" aria-labelledby="patient-name">
-      <div className="patient-identity"><div className="patient-avatar" aria-hidden="true">LC</div><div><p className="eyebrow">Patient</p><h2 id="patient-name">{patient.name}</h2></div></div>
+      <div className="patient-identity"><div className="patient-avatar" aria-hidden="true">{patient.initials}</div><div><p className="eyebrow">Fictional patient</p><h2 id="patient-name">{patient.name}</h2><p>{patient.age} years · {patient.recordId}</p></div></div>
       <div className="patient-period"><span className="eyebrow">Date range</span><strong>{rangeLabel}</strong><span>Encounters · messages · treatment history</span></div>
-      <dl className="patient-stats"><div><dt>Clinical entries</dt><dd>{events.length}</dd></div><div><dt>Messages</dt><dd>{events.filter((event) => event.category === "message").length}</dd></div><div><dt>Medications</dt><dd>{medications.length}</dd></div></dl>
+      <dl className="patient-stats"><div><dt>Clinical entries</dt><dd>{events.length}</dd></div><div><dt>MyChart threads</dt><dd>{events.filter((event) => event.category === "message").length}</dd></div><div><dt>Medications</dt><dd>{medications.length}</dd></div></dl>
     </section>
 
-    <div className="prototype-note"><span className="note-symbol" aria-hidden="true">i</span><p><strong>Why this case.</strong> The widely publicized Lindsay Clancy case offers unusually detailed public documentation of care. It illustrates how a unified timeline could clarify treatment changes, care transitions, and fragmentation across clinicians and settings.</p></div>
+    <div className="prototype-note"><span className="note-symbol" aria-hidden="true">i</span><p><strong>100% fictional.</strong> All people, messages, results and treatment plans are invented. No real patient data or live EHR connection.</p></div>
+
+    <details className="patient-context">
+      <summary><span>Patient context & care team</span><span className="context-preview">{patient.conditions.join(" · ")}</span></summary>
+      <div className="context-body"><div><p className="eyebrow">The care story</p><p>{patient.summary}</p><p className="synthetic-provenance">{patient.provenance}</p><div className="condition-list">{patient.conditions.map((condition) => <span key={condition}>{condition}</span>)}</div><p className="allergy-note"><strong>Recorded allergies:</strong> {patient.allergies.join("; ")}</p></div><div><p className="eyebrow">Fictional care team</p><ul className="context-team">{patient.careTeam.map((member) => <li key={member.name}><strong>{member.name}</strong><span>{member.role}</span></li>)}</ul></div></div>
+    </details>
 
     <section id="timeline-workspace" className="workspace" aria-label="Clinical records">
       <div className="control-deck">
         <div className="workspace-heading"><div><h2>Clinical records</h2></div><div className="view-switch" role="group" aria-label="Record view"><button className={view === "timeline" ? "active" : ""} aria-pressed={view === "timeline"} onClick={() => setView("timeline")}><span aria-hidden="true">↔</span> Timeline</button><button className={view === "list" ? "active" : ""} aria-pressed={view === "list"} onClick={() => setView("list")}><span aria-hidden="true">☷</span> Record list</button></div></div>
         <div className="tools-row">
-          <label className="search-control"><span className="search-icon" aria-hidden="true" /><span className="sr-only">Search clinical records and medications</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search symptoms, medications, clinicians…" type="search" maxLength={200} /></label>
+          <label className="search-control"><span className="search-icon" aria-hidden="true" /><span className="sr-only">Search clinical records and medications</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search messages, medications, lab results…" type="search" maxLength={200} /></label>
           {view === "timeline" && <div className="zoom-control" role="group" aria-label="Timeline zoom"><button aria-label="Zoom out" disabled={!fit && zoom <= .35} onClick={() => changeZoom(fit ? .35 : zoom - .2)}>−</button><span>{fit ? "All dates" : `${Math.round(zoom * 100)}%`}</span><button aria-label="Zoom in" disabled={!fit && zoom >= 2} onClick={() => changeZoom(fit ? .55 : zoom + .2)}>+</button><button className={fit ? "fit active" : "fit"} aria-pressed={fit} onClick={() => { setFit(!fit); }}>Fit</button></div>}
           <button className="primary-button" disabled={!filteredEvents.length} onClick={() => selectEvent(filteredEvents[0])}><span aria-hidden="true">▷</span> Open first entry</button>
         </div>
+        <div className="demo-pathways" role="group" aria-label="Explore demo stories"><span>Explore the demo</span>{demoHighlights.map((highlight) => <button key={highlight.query} className={query === highlight.query.toLowerCase() ? "active" : ""} aria-pressed={query === highlight.query.toLowerCase()} onClick={() => { setSearch(highlight.query); setActiveCategories(highlight.category ? [highlight.category] : categories); setView("list"); }}>{highlight.label}<span aria-hidden="true">↗</span></button>)}</div>
         <div className="filter-row" role="group" aria-label="Filter by entry type"><span className="filter-label">Show</span>{categories.map((category) => <button key={category} className={`filter-chip ${activeCategories.includes(category) ? "active" : ""}`} aria-pressed={activeCategories.includes(category)} onClick={() => toggleCategory(category)} style={colorStyle(categoryMeta[category].color)}><CategoryDot category={category} />{categoryMeta[category].label}<span className="chip-count">{chronologicalEvents.filter((event) => event.category === category).length}</span></button>)}{isFiltered && <button className="text-button" onClick={resetFilters}>Reset filters</button>}</div>
       </div>
 
       <div className="timeline-status"><p aria-live="polite"><strong>{filteredEvents.length}</strong> of {events.length} entries{query && <> matching “{search}”</>}</p>{view === "timeline" ? <><span className="scroll-hint">Scroll horizontally · select a card for details</span><button className={`medication-toggle ${showMedications ? "active" : ""}`} aria-pressed={showMedications} onClick={() => setShowMedications(!showMedications)}><span aria-hidden="true">{showMedications ? "−" : "+"}</span> Medication history</button></> : <span>Chronological order</span>}</div>
 
       {view === "timeline" ? <>
-        <nav className="month-navigation" aria-label="Jump to month"><span>Jump to</span><button onClick={() => centerDate(startTime)}>{formatDate(startTime, { month: "short", year: "numeric" })}</button>{months.map((month) => <button key={month.time} onClick={() => centerDate(month.time)}>{month.short}{month.short === "Jan" ? " 2023" : ""}</button>)}<small className="calendar-note">June–August spacing is compressed</small></nav>
+        <nav className="month-navigation" aria-label="Jump to month"><span>Jump to</span><button onClick={() => centerDate(startTime)}>{formatDate(startTime, { month: "short", year: "numeric" })}</button>{months.map((month) => <button key={month.time} onClick={() => centerDate(month.time)}>{month.short}{new Date(month.time).getUTCMonth() === 0 ? ` ${new Date(month.time).getUTCFullYear()}` : ""}</button>)}<small className="calendar-note">Calendar dates · evenly spaced</small></nav>
         <div className="timeline-stage">
           <div className={`timeline-scroll-coach ${scrollHintVisible ? "visible" : ""}`} aria-hidden={!scrollHintVisible}>
             <div className="scroll-coach-visual" aria-hidden="true"><kbd>Shift</kbd><span>+</span><i className="scroll-coach-mouse"><b /></i></div>
@@ -199,10 +212,10 @@ export default function Home() {
           </div>
         <div className="timeline-scroll" ref={viewportRef} tabIndex={0} role="region" aria-label="Scrollable clinical timeline. Hold Shift while scrolling, or use left and right arrow keys." onScroll={(event) => { const left = event.currentTarget.scrollLeft; if (left !== scrollLeft) setShowScrollHint(false); setScrollLeft(left); }} onKeyDown={(event) => { if (event.target !== event.currentTarget) return; if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); event.currentTarget.scrollBy({ left: event.key === "ArrowRight" ? 320 : -320 }); } if (event.key === "Home" || event.key === "End") { event.preventDefault(); event.currentTarget.scrollTo({ left: event.key === "Home" ? 0 : canvasWidth }); } }}>
           <div className="timeline-canvas" style={{ width: canvasWidth }}>
-            <div className="time-ruler"><span className="range-start">{formatDate(startTime, { month: "short", day: "numeric" })}</span>{months.filter((month) => (month.time <= gapStart || month.time >= gapEnd) && (!fit || canvasWidth > 900 || [8, 10, 0].includes(new Date(month.time).getUTCMonth()))).map((month) => <div className="tick" key={month.time} style={{ left: position(month.time, canvasWidth) }}><span>{fit ? month.short : month.label}</span></div>)}<span className="range-end">{formatDate(endTime, { month: "short", day: "numeric" })}</span></div>
+            <div className="time-ruler"><span className="range-start">{formatDate(startTime, { month: "short", day: "numeric" })}</span>{months.filter((_, index) => !fit || index % Math.max(1, Math.ceil(months.length / Math.max(1, Math.floor((canvasWidth - 224) / 105)))) === 0).map((month) => <div className="tick" key={month.time} style={{ left: position(month.time, canvasWidth) }}><span>{fit ? month.short : month.label}</span></div>)}<span className="range-end">{formatDate(endTime, { month: "short", day: "numeric" })}</span></div>
             <div className="event-field" style={{ height: layout.height }}>
-              {months.filter((month) => month.time <= gapStart || month.time >= gapEnd).map((month) => <div className="month-guide" key={month.time} style={{ left: position(month.time, canvasWidth) }} />)}
-              <div className="main-axis" style={{ top: layout.axis }} /><div className="compressed-gap" style={{ left: position(gapStart, canvasWidth), width: position(gapEnd, canvasWidth) - position(gapStart, canvasWidth) }} aria-label="Spacing from June 2 through August 23 is compressed"><span style={{ top: layout.axis + 23 }}>{canvasWidth < 2000 ? "Jun–Aug" : "June–August · spacing compressed"}</span></div>
+              {months.map((month) => <div className="month-guide" key={month.time} style={{ left: position(month.time, canvasWidth) }} />)}
+              <div className="main-axis" style={{ top: layout.axis }} />
               {layout.cards.map((card) => {
                 const first = card.items[0];
                 const last = card.items.at(-1)!;
@@ -238,10 +251,12 @@ export default function Home() {
       </> : <div className="record-list">{filteredEvents.length ? filteredEvents.map((event, index) => <div className="record-row" key={event.id} style={colorStyle(categoryMeta[event.category].color)}>{(index === 0 || event.date.slice(0, 7) !== filteredEvents[index - 1].date.slice(0, 7)) && <h3 className="record-month">{formatDate(event.date, { month: "long", year: "numeric" })}</h3>}<button className="record-button" onClick={() => selectEvent(event)}><time dateTime={event.date}>{event.displayDate}</time><CategoryDot category={event.category} /><div><span className="record-type">{categoryMeta[event.category].label}{event.clinician ? ` · ${event.clinician}` : ""}</span><strong>{event.title}</strong><p>{event.short}</p></div><span className="record-arrow" aria-hidden="true">↗</span></button></div>) : <div className="list-empty"><h3>No matching entries.</h3><button className="text-button" onClick={resetFilters}>Reset filters</button></div>}</div>}
     </section>
 
+    <footer className="demo-footer"><strong>Fictional records. Real workflow complexity.</strong><span>All people, messages, encounters and results are invented for this demo. No live EHR connection.</span></footer>
+
     <dialog className="detail-dialog" ref={dialogRef} onCancel={() => setSelection(null)} onClose={() => setSelection(null)} onClick={(event) => { if (event.target === event.currentTarget) setSelection(null); }} onKeyDown={(event) => { const target = event.target as HTMLElement; if (target.closest("input, textarea, select, [contenteditable=true]")) return; if (selection?.kind === "event" && (event.key === "ArrowLeft" || event.key === "ArrowRight")) { event.preventDefault(); stepEvent(event.key === "ArrowRight" ? 1 : -1); } }} aria-labelledby="detail-title">
       <div className="drawer-content" onClick={(event) => event.stopPropagation()}>
         <div className="drawer-top"><span className="eyebrow">{selection?.kind === "medication" ? "Medication detail" : selection?.kind === "cluster" ? "Entries in this period" : "Clinical entry"}</span><button className="close-button" aria-label="Close details" onClick={() => setSelection(null)} autoFocus>×</button></div>
-        {selection?.kind === "event" && <><div className="detail-category" style={colorStyle(categoryMeta[selection.event.category].color)}><CategoryDot category={selection.event.category} />{categoryMeta[selection.event.category].label}</div><time className="detail-date" dateTime={selection.event.date}>{selection.event.displayDate}</time><h2 id="detail-title">{selection.event.title}</h2><p className="detail-summary">{selection.event.summary}</p>{(selection.event.clinician || selection.event.institution) && <dl className="care-team">{selection.event.clinician && <div><dt>Clinician</dt><dd>{selection.event.clinician}</dd></div>}{selection.event.institution && <div><dt>Care setting</dt><dd>{selection.event.institution}</dd></div>}</dl>}<div className="detail-section"><h3>Clinical details</h3><ul className="detail-list">{selection.event.details.map((detail, index) => <li key={index}>{detail}</li>)}</ul></div>{selection.event.medication && <div className="detail-medication"><span className="eyebrow">Medications</span><p>{selection.event.medication}</p></div>}{selection.event.caution && <div className="record-note"><strong>Record note</strong><p>{selection.event.caution}</p></div>}<div className="entry-provenance"><span className="eyebrow">Summary type</span><p>{selection.event.recordType}</p></div><div className="drawer-navigation"><button onClick={() => stepEvent(-1)} disabled={activeIndex <= 0}>← Previous</button><span>{activeIndex >= 0 ? `${activeIndex + 1} / ${filteredEvents.length}` : "Selected entry"}</span><button onClick={() => stepEvent(1)} disabled={activeIndex < 0 || activeIndex >= filteredEvents.length - 1}>Next →</button></div></>}
+        {selection?.kind === "event" && <><div className="detail-category" style={colorStyle(categoryMeta[selection.event.category].color)}><CategoryDot category={selection.event.category} />{categoryMeta[selection.event.category].label}</div><time className="detail-date" dateTime={selection.event.date}>{selection.event.displayDate}</time><h2 id="detail-title">{selection.event.title}</h2><p className="detail-summary">{selection.event.summary}</p>{(selection.event.clinician || selection.event.institution) && <dl className="care-team">{selection.event.clinician && <div><dt>Documented by</dt><dd>{selection.event.clinician}</dd></div>}{selection.event.institution && <div><dt>Care setting</dt><dd>{selection.event.institution}</dd></div>}</dl>}<EntryDetails event={selection.event} />{selection.event.medication && <div className="detail-medication"><span className="eyebrow">Medications</span><p>{selection.event.medication}</p></div>}{selection.event.caution && <div className="record-note"><strong>Record note</strong><p>{selection.event.caution}</p></div>}<div className="entry-provenance"><span className="eyebrow">Record type · synthetic demo</span><p>{selection.event.recordType}</p></div><div className="drawer-navigation"><button onClick={() => stepEvent(-1)} disabled={activeIndex <= 0}>← Previous</button><span>{activeIndex >= 0 ? `${activeIndex + 1} / ${filteredEvents.length}` : "Selected entry"}</span><button onClick={() => stepEvent(1)} disabled={activeIndex < 0 || activeIndex >= filteredEvents.length - 1}>Next →</button></div></>}
         {selection?.kind === "cluster" && <><h2 id="detail-title">{selection.items.length} clinical entries</h2><p className="detail-summary">{formatDate(selection.items[0].date)}{selection.items[0].date.slice(0, 10) !== selection.items.at(-1)!.date.slice(0, 10) ? ` – ${formatDate(selection.items.at(-1)!.date)}` : ""}</p><p className="cluster-explanation">Entries are grouped at this zoom level.</p><div className="cluster-entry-list">{selection.items.map((event) => <button key={event.id} onClick={() => selectEvent(event)} style={colorStyle(categoryMeta[event.category].color)}><span className="cluster-entry-meta"><CategoryDot category={event.category} />{event.displayDate} · {categoryMeta[event.category].label}</span><strong>{event.title}</strong><p>{event.short}</p><span className="cluster-entry-open">Open entry →</span></button>)}</div></>}
         {selection?.kind === "medication" && <><div className="detail-category" style={colorStyle(selection.medication.color)}><i className="category-dot" aria-hidden="true" />Medication history</div><h2 id="detail-title">{selection.medication.name}</h2><p className="generic-name">{selection.medication.generic}</p><p className="detail-summary">{selection.medication.summary}</p><div className="medication-detail-list">{selection.medication.segments.map((segment, index) => <article className={selection.segmentIndex === index ? "selected" : ""} key={index}><span className={`status-badge ${segment.status}`}>{segment.status === "reported" ? "Reported use" : segment.status}</span><time>{formatDate(segment.start)}{segment.end && segment.end !== segment.start ? ` – ${formatDate(segment.end)}` : ""}</time><h3>{segment.label}</h3><p>{segment.note}</p></article>)}</div><p className="entry-provenance">Entries do not confirm continuous medication use between dates.</p></>}
       </div>

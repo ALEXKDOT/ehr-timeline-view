@@ -15,5 +15,5 @@ fs.mkdirSync("docs", { recursive: true });
 fs.mkdirSync("standalone-dist", { recursive: true });
 fs.writeFileSync("docs/index.html", html);
 fs.writeFileSync("docs/.nojekyll", "");
-fs.writeFileSync("standalone-dist/Clancy_Clinical_Timeline.html", html);
-console.log("Built GitHub Pages and standalone clinical prototype.");
+fs.writeFileSync("standalone-dist/EHR_Timeline_View.html", html);
+console.log("Built GitHub Pages and standalone synthetic patient demo.");

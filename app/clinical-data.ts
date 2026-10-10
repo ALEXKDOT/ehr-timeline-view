@@ -1,12 +1,13 @@
 /**
- * A manually curated clinical-content prototype based on an existing timeline.
- * This is not a verified original EHR, an Epic/CareConnect export, a synthetic
- * patient record, or a complete medical chart. Descriptions summarize selected
- * treatment history and patient reports; they do not certify primary-record access.
- * Dates are calendar positions, with approximate ranges stated in the content.
- * Medication spans represent selected plans or reports, not daily administration.
+ * Synthetic clinical demonstration: no real patient or source-chart content.
+ * All people, organizations, messages, results and encounters are fictional.
+ * Prescribed, dispensed, patient-reported and administered medication evidence
+ * are distinguished in the narrative. Routine refill histories are summarized;
+ * these selected encounters are not an exhaustive dispensing ledger. Timeline
+ * spans are not adherence claims.
+ * Patient-specific recorded plans are demonstration content, not medical advice.
  */
-export type Category = 'visit' | 'message' | 'symptom' | 'hospital' | 'medication';
+export type Category = 'visit' | 'message' | 'telephone' | 'lab' | 'hospital' | 'medication';
 export type TimelineEvent = {
   id: string; date: string; displayDate: string; title: string; short: string;
   category: Category; clinician?: string; institution?: string; summary: string;
@@ -20,2020 +21,2150 @@ export type Medication = {
 };
 
 export const patient = {
-  name: 'Lindsay Clancy',
-  subtitle: 'Clinical care timeline',
-  period: 'May 2022 – February 2023',
-  startDate: '2022-05-26',
-  endDate: '2023-02-21',
-  provenance: 'Manually compiled clinical summaries from an existing timeline. Not a verified EHR export or a complete medical chart. No live Epic / CareConnect connection.',
+  "name": "Maya Bennett",
+  "age": 42,
+  "initials": "MB",
+  "recordId": "DEMO-1042",
+  "subtitle": "A fictional patient. A connected care journey.",
+  "period": "January – June 2026",
+  "startDate": "2026-01-05",
+  "endDate": "2026-06-26",
+  "summary": "Six months of connected care: new diabetes and blood-pressure treatment, an asthma admission, and the everyday messages, prescriptions and coordination that make recovery possible.",
+  "conditions": [
+    "Type 2 diabetes",
+    "Hypertension",
+    "Asthma",
+    "Dyslipidemia",
+    "Seasonal allergic rhinitis"
+  ],
+  "allergies": [
+    "Penicillin — childhood rash (patient-reported; not independently verified)"
+  ],
+  "careTeam": [
+    {
+      "name": "Lena Ortiz, MD",
+      "role": "Primary care"
+    },
+    {
+      "name": "Jonah Ellis, RN",
+      "role": "Clinical triage & transitions"
+    },
+    {
+      "name": "Priya Soren, PharmD",
+      "role": "Medication management"
+    },
+    {
+      "name": "Tess Rowan, RDN",
+      "role": "Diabetes education"
+    },
+    {
+      "name": "Emery Chen, MD",
+      "role": "Pulmonology"
+    },
+    {
+      "name": "Nia Brooks",
+      "role": "Scheduling & referrals"
+    }
+  ],
+  "provenance": "Entirely synthetic demonstration. Patient, clinicians, institutions, messages, test results and care events are fictional. No real patient records or live EHR connection. Recorded treatment plans illustrate this fictional chart and are not medical advice."
 };
 
 export const categoryMeta: Record<Category, {label: string; color: string}> = {
-  visit: {label: 'Visits', color: '#2b998a'},
-  message: {label: 'Care messages', color: '#3b86b9'},
-  symptom: {label: 'Symptom history', color: '#bc9440'},
-  hospital: {label: 'Hospital care', color: '#5279b2'},
-  medication: {label: 'Medications', color: '#936dc0'},
+  "visit": {
+    "label": "Visits",
+    "color": "#2b998a"
+  },
+  "message": {
+    "label": "MyChart",
+    "color": "#3b86b9"
+  },
+  "telephone": {
+    "label": "Telephone",
+    "color": "#bc9440"
+  },
+  "lab": {
+    "label": "Labs & results",
+    "color": "#66a6a2"
+  },
+  "hospital": {
+    "label": "Hospital care",
+    "color": "#5279b2"
+  },
+  "medication": {
+    "label": "Medications",
+    "color": "#936dc0"
+  }
 };
+
+export const demoHighlights: {label: string; query: string; category?: Category}[] = [
+  {
+    "label": "Discharge & recovery",
+    "query": "discharge"
+  },
+  {
+    "label": "Scheduling & access",
+    "query": "scheduling"
+  },
+  {
+    "label": "Refills & prescriptions",
+    "query": "refill"
+  },
+  {
+    "label": "MyChart conversations",
+    "query": "MyChart",
+    "category": "message"
+  }
+];
 
 export const events: TimelineEvent[] = [
   {
-    "id": "birth",
-    "date": "2022-05-26",
-    "displayDate": "May 26",
-    "title": "Childbirth",
-    "short": "Third childbirth · postpartum period begins",
-    "category": "visit",
-    "summary": "Clancy gave birth on May 26, 2022.",
+    "id": "jan05-registration",
+    "date": "2026-01-05",
+    "displayDate": "Jan 5",
+    "title": "Telephone: establish primary care",
+    "short": "Front desk · new-patient appointment booked",
+    "category": "telephone",
+    "summary": "Maya Bennett calls to establish care after moving within the fictional Harborlight service area.",
     "details": [
-      "During later care, she described the first approximately 12 weeks postpartum as going well."
+      "Patient: “I need a primary care doctor and help keeping my asthma prescriptions in one place. Early appointments work best before my library shift.”",
+      "Nia Brooks, scheduling: Books January 6 at 8:20 AM with Dr. Ortiz; confirms the visit type, arrival instructions and preferred MyChart communication.",
+      "Staff action: Sends electronic intake forms and records permission to leave generic appointment reminders. No clinical assessment or medication advice is provided."
     ],
-    "caution": "Later symptom history is retrospective patient report.",
-    "recordType": "Curated birth history"
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Nia Brooks · front desk / scheduling",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "late-aug",
-    "date": "2022-08-25",
-    "displayDate": "Late August",
-    "title": "Anxiety begins: reported history",
-    "short": "Approximate onset · racing thoughts and overwhelm",
-    "category": "symptom",
-    "summary": "In a later clinical history, Clancy described increasing anxiety and overwhelm after an initially well postpartum period.",
-    "details": [
-      "She reported difficulty leaving the baby and racing thoughts.",
-      "The timing is approximate and was described during later treatment."
-    ],
-    "caution": "This is retrospective symptom history, not a visit dated in August.",
-    "recordType": "Curated patient-reported history"
-  },
-  {
-    "id": "sep12-forms",
-    "date": "2022-09-12",
-    "displayDate": "September 12",
-    "title": "Pre-visit intake forms",
-    "short": "Anxiety, depression and sleep screening",
+    "id": "jan05-welcome",
+    "date": "2026-01-05",
+    "displayDate": "Jan 5",
+    "title": "MyChart: welcome and intake",
+    "short": "Patient goals · medication list requested",
     "category": "message",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy completed intake materials before her first evaluation with Jennifer Tufts.",
+    "summary": "A welcome thread collects Maya’s priorities and prepares the medication reconciliation.",
     "details": [
-      "The history included anxiety, depressive symptoms, insomnia and racing thoughts, with negative suicide, harm, voice and psychosis screening items.",
-      "The forms described earlier anxiety and postpartum anxiety, and previous benefit from fluoxetine and bupropion.",
-      "Prior treatment and side-effect histories differed between later clinical accounts and have not been reconciled."
+      "Nia Brooks, front desk: “Your January 6 visit is confirmed. Please complete the intake form and bring your inhalers and any medicine bottles.”",
+      "Maya Bennett, patient: “My goals are to feel less tired, understand my blood pressure, and have one plan for my asthma. I have been thirstier recently.”",
+      "Jonah Ellis, RN: Acknowledges the symptom report, completes a separate telephone symptom check and routes the intake information to the clinician. The scheduled visit remains in place.",
+      "Thread status: Closed after the patient confirms receipt."
     ],
-    "caution": "Historical medication responses were patient reports; the intake forms preceded the September 15 encounter.",
-    "recordType": "Curated care communication"
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Jonah Ellis, RN · clinical triage",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "tufts-intake",
-    "date": "2022-09-15",
-    "displayDate": "September 15",
-    "title": "Initial psychiatry evaluation",
-    "short": "Telehealth · anxiety, depression and insomnia",
+    "id": "jan06-intake",
+    "date": "2026-01-06",
+    "displayDate": "Jan 6",
+    "title": "New-patient visit: a shared starting point",
+    "short": "BP 152/94 · fatigue and thirst · asthma history",
     "category": "visit",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Tufts assessed anxiety, depressed mood, insomnia, racing thoughts, appetite changes, reduced enjoyment and functional difficulty.",
+    "summary": "Dr. Ortiz establishes primary care and orders evaluation for elevated blood pressure, thirst and fatigue.",
     "details": [
-      "Suicide, harm, hallucination and psychosis screening responses were negative.",
-      "The assessment described generalized anxiety disorder and adjustment disorder with depressed mood.",
-      "Psychotherapy and medication treatment were discussed.",
-      "Sertraline 25 mg daily for one week, then 50 mg if following the plan, was prescribed."
+      "Vitals: BP 152/94 mmHg, repeat 148/92; pulse 78; weight 87.4 kg; oxygen saturation 98% on room air.",
+      "History: Mild persistent asthma diagnosed in adolescence, without a hospital stay in the prior five years. Maya reports budesonide inhaler use twice daily and albuterol less than once weekly before this visit.",
+      "Medication reconciliation: Budesonide 180 mcg one inhalation twice daily and albuterol 90 mcg two puffs as needed are patient-reported existing prescriptions. Actual historical fills are not imported.",
+      "Allergy review: Penicillin — childhood rash, patient-reported; no anaphylaxis described. The record marks the history for later clarification.",
+      "Plan recorded for this fictional patient: Fasting metabolic and lipid panels, HbA1c, home blood-pressure log and a follow-up visit to review results."
     ],
-    "caution": "Findings apply to this encounter. A prescription does not establish medication use.",
-    "recordType": "Curated encounter summary"
+    "recordType": "Synthetic office encounter",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "rx-sep15",
-    "date": "2022-09-15",
-    "displayDate": "September 15",
-    "title": "Sertraline prescribed and filled",
-    "short": "25 mg ×30 · planned increase to 50 mg",
-    "category": "medication",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Sertraline 25 mg daily for one week, followed by a planned increase to 50 mg, was prescribed; a 30-tablet supply of 25 mg was filled.",
+    "id": "jan07-baseline-labs",
+    "date": "2026-01-07",
+    "displayDate": "Jan 7",
+    "title": "Baseline labs: elevated glucose and A1c",
+    "short": "HbA1c 8.4% · fasting glucose 168 mg/dL",
+    "category": "lab",
+    "summary": "The first synthetic laboratory panel provides a baseline for diabetes, lipid and kidney monitoring.",
     "details": [
-      "Clancy subsequently reported that she had not started the medication on this date."
+      "HbA1c: 8.4%; fasting plasma glucose: 168 mg/dL.",
+      "Lipid panel: LDL-C 146 mg/dL; HDL-C 48 mg/dL; triglycerides 182 mg/dL.",
+      "Kidney / electrolytes: Creatinine 0.72 mg/dL; eGFR 104 mL/min/1.73 m²; potassium 4.1 mmol/L.",
+      "Result workflow: Values are released to MyChart and routed to Dr. Ortiz. Diagnosis and treatment decisions appear in the January 9 visit."
     ],
-    "medication": "Sertraline 25 mg; 50 mg planned",
-    "caution": "The dispensing date is distinct from the reported later start date.",
-    "recordType": "Curated medication summary"
+    "recordType": "Synthetic laboratory / diagnostic result",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "sep28-visit",
-    "date": "2022-09-28",
-    "displayDate": "September 28",
-    "title": "Psychiatry follow-up: improved symptoms",
-    "short": "Telehealth · more sleep; sertraline not started",
+    "id": "jan08-results-call",
+    "date": "2026-01-08",
+    "displayDate": "Jan 8",
+    "title": "Telephone: results discussion arranged",
+    "short": "RN callback · patient questions captured",
+    "category": "telephone",
+    "summary": "The triage nurse discusses the purpose of the next-day results appointment and records Maya’s questions.",
+    "details": [
+      "Jonah Ellis, RN: Confirms the clinician has reviewed the abnormal glucose results and verifies that Maya can attend January 9.",
+      "Patient report: Fatigue and thirst are unchanged; no new vomiting, confusion or breathing concerns are reported in this fictional call.",
+      "Maya asks whether she will need insulin and whether work meals can fit a diabetes plan. The questions are added to the visit agenda.",
+      "Clinical handoff: RN routes the call to Dr. Ortiz; the front desk handles appointment logistics separately."
+    ],
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Jonah Ellis, RN · clinical triage",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "jan09-diagnosis",
+    "date": "2026-01-09",
+    "displayDate": "Jan 9",
+    "title": "Diabetes and hypertension: first care plan",
+    "short": "New diagnoses · goals chosen together",
     "category": "visit",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy reported feeling somewhat better as the baby slept more and she was able to sleep more.",
+    "summary": "Dr. Ortiz records type 2 diabetes and hypertension and develops a staged care plan with Maya.",
     "details": [
-      "She reported collecting sertraline but deciding not to take it.",
-      "The assessment described alertness, orientation, engagement, euthymic mood, full affect and appropriate speech and thought.",
-      "No hallucinations were reported."
+      "Assessment: HbA1c 8.4% and fasting glucose 168 mg/dL support the recorded diabetes diagnosis. Home BP readings average 149/91 mmHg across six checks.",
+      "Patient priorities: Avoid an overwhelming medication schedule; prepare breakfast at home; resume walks after work.",
+      "Orders for Maya: Metformin ER 500 mg with the evening meal, with a later tolerability review; losartan 25 mg daily; diabetes education, urine albumin screening and a retinal examination referral.",
+      "Examination: Foot skin intact, pulses palpable and monofilament sensation preserved. No acute asthma symptoms.",
+      "Follow-up ownership: Pharmacist for medication tolerance, RN for the BP log, dietitian for meal planning and PCP for treatment decisions."
     ],
-    "caution": "The findings describe a time-limited video encounter.",
-    "recordType": "Curated encounter summary"
+    "recordType": "Synthetic office encounter",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "sertraline-deferred",
-    "date": "2022-09-28",
-    "displayDate": "September 28",
-    "title": "Sertraline plan deferred",
-    "short": "Filled previously · patient reports no doses taken",
+    "id": "jan09-metformin-rx",
+    "date": "2026-01-09",
+    "displayDate": "Jan 9",
+    "title": "Prescription: metformin ER begins",
+    "short": "500 mg nightly · initial prescription",
     "category": "medication",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "After the September 28 visit, Tufts deferred sertraline and continued to recommend therapy.",
+    "summary": "Metformin ER 500 mg is prescribed for Maya’s newly documented type 2 diabetes.",
     "details": [
-      "Clancy reported improvement without starting sertraline.",
-      "The precise date of her later start remains uncertain."
+      "Prescription: Metformin ER 500 mg tablets; one tablet with the evening meal; quantity 30, one refill.",
+      "Status: Electronic prescription sent to Harborlight Demo Pharmacy. Dispensing is recorded separately on January 12.",
+      "Titration: A possible increase is deferred until the pharmacist checks tolerance. This is a fictional patient-specific order."
     ],
-    "medication": "Sertraline deferred",
-    "caution": "A fill does not establish ingestion.",
-    "recordType": "Curated medication summary"
+    "recordType": "Synthetic medication record",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health",
+    "medication": "Metformin ER 500 mg"
   },
   {
-    "id": "leave",
-    "date": "2022-09-30",
-    "displayDate": "September 30",
-    "title": "MyChart: difficulty returning to work",
-    "short": "Patient-reported functional limitation",
+    "id": "jan09-losartan-rx",
+    "date": "2026-01-09",
+    "displayDate": "Jan 9",
+    "title": "Prescription: losartan begins",
+    "short": "25 mg daily · kidney panel planned",
+    "category": "medication",
+    "summary": "Losartan 25 mg daily is prescribed after review of repeated elevated blood-pressure readings.",
+    "details": [
+      "Prescription: Losartan 25 mg tablets; one daily; quantity 30, one refill.",
+      "Order workflow: Baseline creatinine and potassium are reviewed; a follow-up metabolic panel is scheduled.",
+      "Status: Prescription sent; the record does not infer that a dose was taken on the order date."
+    ],
+    "recordType": "Synthetic medication record",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health",
+    "medication": "Losartan 25 mg"
+  },
+  {
+    "id": "jan12-first-fill",
+    "date": "2026-01-12",
+    "displayDate": "Jan 12",
+    "title": "Pharmacy: first prescriptions dispensed",
+    "short": "Metformin ER and losartan · pickup confirmed",
+    "category": "medication",
+    "summary": "The demo pharmacy records dispensing the two new prescriptions; Maya later confirms starting both that evening.",
+    "details": [
+      "Dispensing record: Metformin ER 500 mg, 30 tablets; losartan 25 mg, 30 tablets.",
+      "Patient report documented January 13: First doses taken January 12 after pharmacy pickup.",
+      "Pharmacy counseling: Bottle labels, refill process and the medication-review appointment are discussed.",
+      "Evidence distinction: Dispensing and the subsequent patient-reported start are separate facts; neither establishes every later dose."
+    ],
+    "recordType": "Synthetic medication record",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Pharmacy",
+    "medication": "Metformin ER 500 mg; losartan 25 mg"
+  },
+  {
+    "id": "jan13-tolerance-message",
+    "date": "2026-01-13",
+    "displayDate": "Jan 13",
+    "title": "MyChart: a question after the first doses",
+    "short": "Mild stomach upset · pharmacist replies",
     "category": "message",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy told her clinician that she did not feel ready to resume nursing care and was only well enough to function without medication.",
+    "summary": "Maya sends an early tolerability question and receives a documented pharmacist response.",
     "details": [
-      "The message also discussed infant feeding and overnight nursing demands."
+      "Maya Bennett, patient: “I started both medicines last night. My stomach felt unsettled this morning. Is this something we should talk about before changing the dose?”",
+      "Priya Soren, PharmD: “Thank you for telling us. I have reviewed your message with Dr. Ortiz. We will keep your current prescription unchanged and review how you feel at Friday’s visit.”",
+      "Maya Bennett: “That works. I can take notes on when it happens and bring the bottles.”",
+      "Thread outcome: Medication review remains scheduled for January 16; no dose increase is recorded in this thread."
     ],
-    "caution": "This is a patient report of functioning, not an independent occupational assessment.",
-    "recordType": "Curated care communication"
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Health",
+    "medication": "Metformin ER"
   },
   {
-    "id": "oct3-visit",
-    "date": "2022-10-03",
-    "displayDate": "October 3",
-    "title": "Psychiatry follow-up: daily functioning",
-    "short": "Telehealth · postpartum anxiety and depression",
+    "id": "jan14-education-scheduling",
+    "date": "2026-01-14",
+    "displayDate": "Jan 14",
+    "title": "Telephone: diabetes education scheduled",
+    "short": "Front desk · morning slot and waitlist",
+    "category": "telephone",
+    "summary": "Scheduling staff coordinate a diabetes-education visit around Maya’s work hours.",
+    "details": [
+      "Maya requests an appointment before her afternoon library shift and asks whether the visit can be by video.",
+      "Nia Brooks, scheduling: Offers January 20 at 9:00 AM by video, sends the connection instructions through MyChart and adds Maya to an earlier-slot waitlist.",
+      "Staff boundary: Questions about glucose testing are routed to the diabetes educator; front-desk staff do not issue a monitoring plan.",
+      "Outcome: Patient accepts the appointment and confirms the portal invitation."
+    ],
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Nia Brooks · front desk / scheduling",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "jan16-pharmacist",
+    "date": "2026-01-16",
+    "displayDate": "Jan 16",
+    "title": "Pharmacist visit: first-week check-in",
+    "short": "Bottle review · stomach symptoms improving",
     "category": "visit",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy met with Tufts after reporting that postpartum anxiety and depression were affecting readiness to return to work.",
+    "summary": "The pharmacist reconciles the newly filled medicines and reviews tolerance with Maya.",
     "details": [
-      "The mental-status assessment was described as broadly unchanged from September 28."
+      "Patient report: Metformin ER 500 mg nightly and losartan 25 mg daily since January 12; mild stomach upset is improving and no dizziness is reported.",
+      "Home BP log: Average 145/89 mmHg over the available four days; cuff technique is reviewed.",
+      "Dr. Ortiz approves the next metformin step after the pharmacist’s assessment. A separate prescription update documents the change.",
+      "Teach-back: Maya correctly identifies the purpose of each medicine and where to find the active list in MyChart."
     ],
-    "caution": "This encounter does not establish a new diagnosis.",
-    "recordType": "Curated encounter summary"
+    "recordType": "Synthetic office encounter",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "oct3-therapy",
-    "date": "2022-10-03",
-    "displayDate": "October 3",
-    "title": "Initial therapy appointment",
-    "short": "First encounter with Jennifer McAllister",
-    "category": "visit",
-    "clinician": "Jennifer McAllister",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy had an initial therapy encounter with Jennifer McAllister after the same-day psychiatry visit.",
-    "details": [
-      "The complete therapy note is not available within the curated material."
-    ],
-    "caution": "Only the encounter and its sequence can be summarized; detailed symptom and safety findings are unavailable.",
-    "recordType": "Curated encounter summary"
-  },
-  {
-    "id": "sertraline-stop",
-    "date": "2022-10-20",
-    "displayDate": "October 20",
-    "title": "Psychiatry follow-up: medication concerns",
-    "short": "Telehealth · worse sleep, anxiety and mental fog",
-    "category": "visit",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy reported worsening sleep, anxiety, mental fog, overnight racing thoughts, appetite loss, diarrhea and tearfulness after starting sertraline and increasing from 25 to 50 mg.",
-    "details": [
-      "She denied suicidal and homicidal thoughts but described fear of eventually developing suicidal thoughts.",
-      "She reported not wanting to be alone and seeking family support.",
-      "Tufts described depressed and anxious mood, with appropriate speech and thought process and intact cognition.",
-      "Sertraline was stopped; an immediate replacement prescription was deferred."
-    ],
-    "caution": "The reported sequence does not establish causation. Exact start dates and dose adherence are uncertain.",
-    "recordType": "Curated encounter summary"
-  },
-  {
-    "id": "med-oct20",
-    "date": "2022-10-20",
-    "displayDate": "October 20",
-    "title": "Sertraline discontinued",
-    "short": "Replacement prescription deferred",
+    "id": "jan16-metformin-titration",
+    "date": "2026-01-16",
+    "displayDate": "Jan 16",
+    "title": "Prescription update: metformin ER 1,000 mg",
+    "short": "Two 500 mg tablets · evening dose",
     "category": "medication",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Tufts advised stopping sertraline following the reported symptom worsening.",
+    "summary": "The metformin ER prescription increases to 1,000 mg nightly after the tolerability review.",
     "details": [
-      "Clancy preferred not to begin another prescription immediately.",
-      "Alternative approaches and supplements were discussed."
+      "Order: Two 500 mg ER tablets with the evening meal; quantity 60, one refill.",
+      "Status: New order replaces the earlier 500 mg daily instruction. Pharmacy label update and pickup are documented on January 19 within the pharmacy record.",
+      "Patient report at January 20 education visit: Maya began the revised dose January 16 using her existing supply."
     ],
-    "medication": "Sertraline stopped",
-    "caution": "The exact number and timing of prior doses are unknown.",
-    "recordType": "Curated medication summary"
+    "recordType": "Synthetic medication record",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health",
+    "medication": "Metformin ER 1,000 mg"
   },
   {
-    "id": "oct21",
-    "date": "2022-10-21",
-    "displayDate": "October 21",
-    "title": "Psychiatry follow-up: acute insomnia",
-    "short": "Telehealth · severe anxiety and palpitations",
+    "id": "jan20-education",
+    "date": "2026-01-20",
+    "displayDate": "Jan 20",
+    "title": "Diabetes education: practical daily routines",
+    "short": "Meals, activity and an achievable first goal",
     "category": "visit",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy reported no sleep the preceding night, severe anxiety, a racing heart, gastrointestinal symptoms, crying and fogginess.",
+    "summary": "Maya and the dietitian build a plan around her actual workday rather than a generic checklist.",
     "details": [
-      "She described yawning without feeling drowsy.",
-      "The assessment did not identify pressured speech, hyperactivity, mania, psychosis, suicidal or homicidal ideation, or hallucinations.",
-      "Short-term lorazepam was prescribed as needed for severe anxiety."
+      "Patient context: Breakfast is often skipped, lunch breaks are short and she enjoys walking near the community garden.",
+      "Agreed goal: Prepare a simple breakfast on four workdays and take a 15-minute walk after lunch on three days each week.",
+      "Educational topics recorded: Reading food labels, a balanced plate, medication questions and how future A1c results will track the care plan.",
+      "Patient report: Revised metformin dose is tolerated so far. Questions needing medical decisions are routed to Dr. Ortiz.",
+      "Follow-up: February 26 nutrition review booked; a short progress message is invited through MyChart."
     ],
-    "caution": "Sleep and symptoms were reported during the encounter.",
-    "recordType": "Curated encounter summary"
+    "recordType": "Synthetic office encounter",
+    "clinician": "Tess Rowan, RDN · diabetes education",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "rx-oct21",
-    "date": "2022-10-21",
-    "displayDate": "October 21",
-    "title": "Lorazepam prescribed",
-    "short": "0.5 mg ×7 · as needed for severe anxiety",
-    "category": "medication",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Seven 0.5 mg lorazepam tablets were prescribed and filled for short-term, as-needed use.",
+    "id": "jan21-bp-message",
+    "date": "2026-01-21",
+    "displayDate": "Jan 21",
+    "title": "MyChart: first home blood-pressure log",
+    "short": "Seven-day average 143/88 mmHg",
+    "category": "message",
+    "summary": "A patient-submitted BP log becomes part of the shared longitudinal record.",
     "details": [
-      "The intended indication was severe anxiety."
+      "Maya Bennett, patient: “Here are my morning numbers from the past week. The cuff is easier now that I rest first.”",
+      "Jonah Ellis, RN: “I have entered your seven-day average of 143/88 and sent the individual readings to Dr. Ortiz.”",
+      "Lena Ortiz, MD: “I reviewed the log. We will review another set of readings at your February visit before deciding on a change.”",
+      "Maya Bennett: “I will bring the cuff to the nurse visit so we can compare it.”",
+      "Thread outcome: No prescription change; the existing monitoring and follow-up plan continues."
     ],
-    "medication": "Lorazepam 0.5 mg",
-    "caution": "The fill does not establish the number of doses taken.",
-    "recordType": "Curated medication summary"
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health",
+    "medication": "Losartan 25 mg"
   },
   {
-    "id": "oct26",
-    "date": "2022-10-26",
-    "displayDate": "October 26",
-    "title": "Psychiatry follow-up: persistent symptoms",
-    "short": "Telehealth · anxiety and depression continue",
+    "id": "jan22-kidney-labs",
+    "date": "2026-01-22",
+    "displayDate": "Jan 22",
+    "title": "Kidney screening and electrolyte follow-up",
+    "short": "UACR 11 mg/g · potassium 4.2 mmol/L",
+    "category": "lab",
+    "summary": "Urine screening and the first follow-up metabolic panel return after losartan initiation.",
+    "details": [
+      "Urine albumin-to-creatinine ratio: 11 mg/g.",
+      "Creatinine: 0.75 mg/dL; eGFR: 101 mL/min/1.73 m²; potassium: 4.2 mmol/L.",
+      "Clinician review: Dr. Ortiz documents stable kidney function and electrolytes compared with the baseline panel.",
+      "Result status: Final; patient explanation sent through the portal. The record contains no evidence of albuminuria at this check."
+    ],
+    "recordType": "Synthetic laboratory / diagnostic result",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "jan23-eye-referral-call",
+    "date": "2026-01-23",
+    "displayDate": "Jan 23",
+    "title": "Telephone: retinal screening coordinated",
+    "short": "Referral received · appointment confirmed",
+    "category": "telephone",
+    "summary": "The referral coordinator closes the scheduling loop for the initial diabetes eye examination.",
+    "details": [
+      "Nia Brooks, scheduling: Confirms the referral was received by Harborlight Demo Eye Clinic and offers a January 26 cancellation slot.",
+      "Maya accepts the morning appointment and asks whether she needs a separate insurance referral.",
+      "Staff action: Verifies the demo plan’s referral requirement, sends the order and records receipt from the eye clinic.",
+      "Outcome: Appointment confirmed; clinical interpretation remains with the eye clinician."
+    ],
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Nia Brooks · front desk / scheduling",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "jan26-eye-exam",
+    "date": "2026-01-26",
+    "displayDate": "Jan 26",
+    "title": "Retinal examination completed",
+    "short": "No diabetic retinopathy documented",
     "category": "visit",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy reported that lorazepam reduced anxiety but did not improve sleep; diphenhydramine had been more helpful for sleep.",
+    "summary": "The fictional eye clinic completes the baseline dilated retinal examination and returns its report.",
     "details": [
-      "Mood remained anxious and depressed.",
-      "She denied suicidal and homicidal ideation; no psychosis was observed.",
-      "Non-benzodiazepine options were discussed.",
-      "Lorazepam, buspirone and hydroxyzine were prescribed."
+      "Report: No diabetic retinopathy or macular edema identified in either eye at this examination.",
+      "Visual acuity with current correction: 20/20 right eye and 20/25 left eye.",
+      "Follow-up recommendation recorded by the eye clinician: Routine reassessment in one year unless symptoms prompt an earlier evaluation.",
+      "Care coordination: Report received by primary care and the referral is marked completed."
     ],
-    "caution": "Later use of every prescribed medication is not established.",
-    "recordType": "Curated encounter summary"
+    "recordType": "Synthetic office encounter",
+    "clinician": "Sage Mercer, OD · optometry",
+    "institution": "Harborlight Demo Eye Clinic"
   },
   {
-    "id": "rx-oct26",
-    "date": "2022-10-26",
-    "displayDate": "October 26",
-    "title": "Anxiety regimen prescriptions",
-    "short": "Lorazepam · buspirone · hydroxyzine",
+    "id": "jan28-lipid-message",
+    "date": "2026-01-28",
+    "displayDate": "Jan 28",
+    "title": "MyChart: discussing cholesterol treatment",
+    "short": "Shared decision · one change at a time",
+    "category": "message",
+    "summary": "Maya and Dr. Ortiz discuss the elevated LDL result and a proposed statin before the next prescription is issued.",
+    "details": [
+      "Lena Ortiz, MD: “Your LDL cholesterol was 146. At our next step I would like to discuss a cholesterol medicine in the context of your diabetes and overall health.”",
+      "Maya Bennett, patient: “I am open to it, but I would like to know which bottle it is and what to report if I notice a problem.”",
+      "Lena Ortiz, MD: Documents a follow-up conversation about expected benefit, potential adverse effects and Maya’s preferences; Maya agrees to the proposed atorvastatin prescription.",
+      "Priya Soren, PharmD: “I will include the new medicine in your February bottle review so the list stays clear.”",
+      "Thread outcome: Prescription issued January 30; this discussion alone is not a dispensing record."
+    ],
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health",
+    "medication": "Atorvastatin"
+  },
+  {
+    "id": "jan30-statin-rx",
+    "date": "2026-01-30",
+    "displayDate": "Jan 30",
+    "title": "Prescription: atorvastatin added",
+    "short": "20 mg nightly · lipid follow-up planned",
     "category": "medication",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Three prescriptions were filled during a change in the anxiety regimen.",
+    "summary": "Atorvastatin is added after the shared decision recorded in the portal thread.",
     "details": [
-      "Lorazepam 1 mg ×30.",
-      "Buspirone 5 mg ×30 for daily use.",
-      "Hydroxyzine 25 mg ×30 as an alternative to lorazepam."
+      "Prescription: Atorvastatin 20 mg nightly; quantity 30, two refills.",
+      "Dispensing: Harborlight Demo Pharmacy records a 30-tablet fill January 31. Maya reports beginning it that evening at her next pharmacist visit.",
+      "Follow-up: Lipid testing is included in the April laboratory orders. No adverse effect is reported at the time of prescribing."
     ],
-    "medication": "Lorazepam 1 mg; buspirone 5 mg; hydroxyzine 25 mg",
-    "caution": "Concurrent use is not established; buspirone was later reported not started.",
-    "recordType": "Curated medication summary"
+    "recordType": "Synthetic medication record",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health",
+    "medication": "Atorvastatin 20 mg"
   },
   {
-    "id": "therapy",
-    "date": "2022-10-31",
-    "displayDate": "October 31",
-    "title": "Therapy follow-up",
-    "short": "Modality uncertain · suicidal and homicidal thoughts denied",
+    "id": "feb03-cost-question",
+    "date": "2026-02-03",
+    "displayDate": "Feb 3",
+    "title": "MyChart: keeping medication costs predictable",
+    "short": "Pharmacist checks coverage and refill alignment",
+    "category": "message",
+    "summary": "Maya asks for help understanding separate pickup dates and copays for the new medicines.",
+    "details": [
+      "Maya Bennett, patient: “The three bottles have different refill dates. Can they eventually be ready together? I am trying to plan the monthly cost.”",
+      "Priya Soren, PharmD: “I reviewed the demo pharmacy record. We can work toward one pickup date after the dose reviews, and I will check which prescriptions qualify for a 90-day supply.”",
+      "Maya Bennett: “One pickup would help. Please keep me on the generic medicines when they are appropriate.”",
+      "Thread outcome: Refill synchronization task opened. No formulary change or extra medication is added."
+    ],
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "feb05-reschedule",
+    "date": "2026-02-05",
+    "displayDate": "Feb 5",
+    "title": "Telephone: follow-up rescheduled",
+    "short": "Front desk · work conflict resolved",
+    "category": "telephone",
+    "summary": "A work conflict is resolved without losing the follow-up laboratory and medication-review tasks.",
+    "details": [
+      "Maya calls to move her February 11 PCP appointment because a coworker’s leave changed her shift.",
+      "Nia Brooks, scheduling: Moves the visit to February 12 at 8:00 AM; retains the February 9 nurse BP check.",
+      "Staff action: Updates the appointment reminder and confirms that the visit agenda includes the BP log and medication tolerance.",
+      "Outcome: Both appointments are confirmed. No treatment decision is made by scheduling staff."
+    ],
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Nia Brooks · front desk / scheduling",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "feb09-nurse-bp",
+    "date": "2026-02-09",
+    "displayDate": "Feb 9",
+    "title": "Nurse visit: check the home cuff",
+    "short": "Office BP 142/86 · cuff comparison",
     "category": "visit",
-    "clinician": "Jennifer McAllister",
-    "institution": "Aster Mental Health",
-    "summary": "The available summary of a therapy note describes denial of suicidal and homicidal ideation.",
+    "summary": "An in-person nurse visit confirms usable home BP technique before the PCP follow-up.",
     "details": [
-      "The appointment was approximately one hour and may have been virtual.",
-      "The full therapy chart is unavailable."
+      "Office measurement: BP 142/86 mmHg after rest; home cuff at the same visit reads 144/87.",
+      "Patient report: No missed losartan doses in the past week and no lightheadedness; seven-day home average 143/86.",
+      "Workflow: RN records cuff size, positioning and technique, then routes the log to Dr. Ortiz.",
+      "Plan: February 12 clinician review remains scheduled; the nurse does not change the prescription."
     ],
-    "caution": "Modality and the scope of the safety assessment cannot be confirmed.",
-    "recordType": "Curated encounter summary"
+    "recordType": "Synthetic office encounter",
+    "clinician": "Jonah Ellis, RN · clinical triage",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "nov2",
-    "date": "2022-11-02",
-    "displayDate": "November 2",
-    "title": "Psychiatry follow-up: sleep improves",
-    "short": "Telehealth · lorazepam benefit; taper planned",
+    "id": "feb12-pcp",
+    "date": "2026-02-12",
+    "displayDate": "Feb 12",
+    "title": "Primary care: refine the first treatment plan",
+    "short": "BP still above agreed goal · energy improving",
     "category": "visit",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy reported that lorazepam helped and sleep improved; Tufts discussed a gradual taper rather than long-term use.",
+    "summary": "Dr. Ortiz reviews progress and makes staged medication adjustments with follow-up monitoring.",
     "details": [
-      "Clancy reported not starting buspirone because she was afraid to begin another medication.",
-      "Her mood was reported as euthymic, with appropriate affect.",
-      "She denied suicidal and homicidal ideation."
+      "Vitals: BP 140/86 mmHg; weight 86.8 kg. Maya reports less thirst and gradually improving energy.",
+      "Hypertension: Persistent home readings prompt a recorded increase from losartan 25 mg to 50 mg daily.",
+      "Diabetes: Metformin ER 1,000 mg is now tolerated. An increase to 1,500 mg nightly is planned for February 13, with a pharmacist check the following week.",
+      "Asthma: No nighttime symptoms and no increase in rescue inhaler use at this visit.",
+      "Orders: Follow-up metabolic panel February 17; pharmacist February 18; A1c and lipid panel in April."
     ],
-    "recordType": "Curated encounter summary"
+    "recordType": "Synthetic office encounter",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "rx-nov2",
-    "date": "2022-11-02",
-    "displayDate": "November 2",
-    "title": "Lorazepam refill and taper plan",
-    "short": "0.5 mg ×40 · reductions every two weeks",
+    "id": "feb12-losartan-increase",
+    "date": "2026-02-12",
+    "displayDate": "Feb 12",
+    "title": "Prescription update: losartan 50 mg",
+    "short": "Prior 25 mg order discontinued",
     "category": "medication",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "A 40-tablet supply of lorazepam 0.5 mg was filled; the plan called for 0.25 mg reductions every two weeks.",
+    "summary": "Losartan increases to 50 mg daily after review of home and office readings.",
     "details": [
-      "Clancy reported benefit at the associated visit."
+      "Prescription: Losartan 50 mg tablets; one daily; quantity 30, two refills. The previous 25 mg daily order is discontinued.",
+      "Patient-specific transition: The pharmacy provides the updated label; Maya reports the first 50 mg dose on February 12.",
+      "Follow-up: Creatinine and potassium check scheduled February 17. The old bottle is reviewed at the pharmacist visit to avoid duplicate dosing."
     ],
-    "medication": "Lorazepam taper planned",
-    "caution": "The taper schedule does not establish the doses actually taken.",
-    "recordType": "Curated medication summary"
+    "recordType": "Synthetic medication record",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health",
+    "medication": "Losartan 50 mg"
   },
   {
-    "id": "rx-nov9",
-    "date": "2022-11-09",
-    "displayDate": "November 9",
-    "title": "Buspirone refill",
-    "short": "5 mg ×30 · use unknown",
+    "id": "feb13-metformin-increase",
+    "date": "2026-02-13",
+    "displayDate": "Feb 13",
+    "title": "Prescription update: metformin ER 1,500 mg",
+    "short": "Three 500 mg tablets · tolerance follow-up",
     "category": "medication",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "A second 30-tablet supply of buspirone 5 mg was filled.",
+    "summary": "The previously discussed metformin step is entered as a new prescription.",
     "details": [
-      "On November 2, Clancy had reported that she had not started buspirone."
+      "Prescription: Metformin ER 500 mg tablets; three with the evening meal; quantity 90, two refills.",
+      "Dispensing: Updated supply recorded February 13. Patient-reported use at 1,500 mg is confirmed at the February 18 pharmacist visit.",
+      "Reconciliation: This replaces the earlier 1,000 mg nightly instruction; both doses are not intended to remain active."
     ],
-    "medication": "Buspirone 5 mg",
-    "caution": "The refill does not establish whether she subsequently took it.",
-    "recordType": "Curated medication summary"
+    "recordType": "Synthetic medication record",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health",
+    "medication": "Metformin ER 1,500 mg"
   },
   {
-    "id": "ed",
-    "date": "2022-11-16",
-    "displayDate": "November 16",
-    "title": "South Shore emergency visit",
-    "short": "Insomnia, anxiety and palpitations",
+    "id": "feb17-metabolic-panel",
+    "date": "2026-02-17",
+    "displayDate": "Feb 17",
+    "title": "Metabolic panel after losartan adjustment",
+    "short": "Creatinine 0.76 · potassium 4.3",
+    "category": "lab",
+    "summary": "The follow-up panel is reviewed after the losartan dose change.",
+    "details": [
+      "Creatinine: 0.76 mg/dL; eGFR: 100 mL/min/1.73 m²; potassium: 4.3 mmol/L; sodium: 139 mmol/L.",
+      "Glucose: 134 mg/dL, nonfasting specimen; the result is not used as a standalone A1c substitute.",
+      "Clinician interpretation: Kidney function and potassium remain stable relative to the January panel.",
+      "Result routing: Final results are available to the pharmacist before the February 18 medication review."
+    ],
+    "recordType": "Synthetic laboratory / diagnostic result",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "feb18-pharmacist",
+    "date": "2026-02-18",
+    "displayDate": "Feb 18",
+    "title": "Pharmacist visit: one accurate medication list",
+    "short": "Dose changes reconciled · duplicate orders removed",
+    "category": "visit",
+    "summary": "Maya brings all medication bottles for a structured review after the February changes.",
+    "details": [
+      "Patient-reported current regimen: Metformin ER 1,500 mg nightly, losartan 50 mg daily, atorvastatin 20 mg nightly, budesonide inhaler twice daily and albuterol as needed.",
+      "Tolerance: Transient stomach upset has resolved; no dizziness or muscle symptoms reported.",
+      "Reconciliation: The 25 mg losartan and prior metformin directions are removed from the active list. Pharmacy confirms only the current instructions remain eligible for refill.",
+      "Adherence support: A simple morning/evening checklist is saved in MyChart; refill synchronization remains in progress."
+    ],
+    "recordType": "Synthetic office encounter",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "feb20-asthma-message",
+    "date": "2026-02-20",
+    "displayDate": "Feb 20",
+    "title": "MyChart: routine asthma check-in",
+    "short": "Controller use and rescue use documented",
+    "category": "message",
+    "summary": "A routine portal check establishes a clear baseline before the later respiratory illness.",
+    "details": [
+      "Jonah Ellis, RN: “For your chart update, how often have you used the rescue inhaler and have symptoms woken you at night?”",
+      "Maya Bennett, patient: “I used albuterol once after cleaning a dusty storage area. No nights have been interrupted. I am still using the budesonide morning and evening.”",
+      "Jonah Ellis, RN: “Thank you. I added this to your record and sent it to Dr. Ortiz. Your regular asthma follow-up remains in place.”",
+      "Thread outcome: Stable patient-reported symptoms; no new prescription."
+    ],
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Jonah Ellis, RN · clinical triage",
+    "institution": "Harborlight Demo Health",
+    "medication": "Budesonide; albuterol"
+  },
+  {
+    "id": "feb23-albuterol-refill-call",
+    "date": "2026-02-23",
+    "displayDate": "Feb 23",
+    "title": "Telephone: rescue inhaler refill request",
+    "short": "Front desk routes request to clinical team",
+    "category": "telephone",
+    "summary": "Maya calls because the expiration date on her backup albuterol inhaler is approaching.",
+    "details": [
+      "Maya requests a replacement backup inhaler and reports no current breathing symptoms to the call taker.",
+      "Nia Brooks, front desk: Verifies the medication name and preferred demo pharmacy, then routes the refill request to the nurse refill queue.",
+      "Jonah Ellis, RN: Reviews the active medication list and forwards the request to Dr. Ortiz for authorization.",
+      "Outcome: Prescription decision is documented separately on February 24; the front desk does not approve the refill."
+    ],
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Nia Brooks · front desk / scheduling",
+    "institution": "Harborlight Demo Health",
+    "medication": "Albuterol"
+  },
+  {
+    "id": "feb24-albuterol-refill",
+    "date": "2026-02-24",
+    "displayDate": "Feb 24",
+    "title": "Prescription: albuterol refill authorized",
+    "short": "Rescue inhaler · 200 actuations",
+    "category": "medication",
+    "summary": "Dr. Ortiz authorizes a replacement albuterol inhaler after reviewing the refill request.",
+    "details": [
+      "Prescription: Albuterol HFA 90 mcg per actuation, two puffs every 4–6 hours as needed for wheeze under Maya’s documented asthma plan; one inhaler, one refill.",
+      "Dispensing: One 200-actuation inhaler recorded February 25.",
+      "Patient context: The request replaces an expiring backup device and does not by itself indicate frequent rescue use."
+    ],
+    "recordType": "Synthetic medication record",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health",
+    "medication": "Albuterol HFA 90 mcg"
+  },
+  {
+    "id": "feb26-nutrition",
+    "date": "2026-02-26",
+    "displayDate": "Feb 26",
+    "title": "Nutrition follow-up: make the routine sustainable",
+    "short": "Breakfast goal met · walks fit the workday",
+    "category": "visit",
+    "summary": "The dietitian reviews Maya’s own goals and adjusts them for a changing work schedule.",
+    "details": [
+      "Patient report: Breakfast prepared on four of five workdays; lunch walks completed three times most weeks.",
+      "Barrier identified: Long evening shifts make dinner planning difficult. Maya selects two practical meal options to prepare ahead.",
+      "Progress: Maya reports fewer energy dips and feels more confident reading labels; no new weight or laboratory measurement is inferred from those reports.",
+      "Plan: Continue the agreed routines and review progress after the April A1c result."
+    ],
+    "recordType": "Synthetic office encounter",
+    "clinician": "Tess Rowan, RDN · diabetes education",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "feb27-progress-message",
+    "date": "2026-02-27",
+    "displayDate": "Feb 27",
+    "title": "MyChart: small changes are adding up",
+    "short": "Home BP average 132/82 · patient goal update",
+    "category": "message",
+    "summary": "Maya shares a home BP log and a brief progress update with the care team.",
+    "details": [
+      "Maya Bennett, patient: “My last week averages 132/82, and I am keeping the breakfast goal. It feels more manageable than trying to change everything at once.”",
+      "Jonah Ellis, RN: “I entered the home readings and shared your update with Dr. Ortiz and Tess.”",
+      "Lena Ortiz, MD: “The trend is encouraging. I have reviewed the log and will keep the current prescription plan in place pending our next visit.”",
+      "Thread status: Closed with no medication changes."
+    ],
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "mar03-cough-message",
+    "date": "2026-03-03",
+    "displayDate": "Mar 3",
+    "title": "MyChart: a new cough after a household cold",
+    "short": "Symptoms routed to clinical triage",
+    "category": "message",
+    "summary": "Maya reports a new respiratory illness through MyChart; the message generates a nurse follow-up.",
+    "details": [
+      "Maya Bennett, patient: “I caught the cold going around at home. I have a cough and a scratchy throat. Can we check whether I should come in?”",
+      "Nia Brooks, front desk: “I have sent your symptom message to our nursing team for assessment. They will handle the clinical questions.”",
+      "Jonah Ellis, RN: Documents a callback arrangement and reviews the symptom message before the March 4 telephone encounter.",
+      "Thread outcome: Routed for clinical assessment; no automated diagnosis or medication change is made in MyChart."
+    ],
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Jonah Ellis, RN · clinical triage",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "mar04-triage",
+    "date": "2026-03-04",
+    "displayDate": "Mar 4",
+    "title": "Telephone: respiratory symptom triage",
+    "short": "RN assessment · sick visit arranged",
+    "category": "telephone",
+    "summary": "The nurse conducts a clinical symptom review and arranges an office assessment.",
+    "details": [
+      "Patient report: Two days of cough and congestion, mild intermittent wheeze, able to speak comfortably and no shortness of breath at rest during the call.",
+      "Clinical assessment: Jonah Ellis records the symptom history, current inhaler use and the absence of reported emergency warning features during this time-limited call.",
+      "Routing: RN discusses the call with Dr. Ortiz and arranges a March 5 sick visit; individualized escalation instructions are recorded in the fictional chart.",
+      "Scheduling handoff: Front desk confirms the appointment after the clinical disposition is made."
+    ],
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Jonah Ellis, RN · clinical triage",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "mar05-sick-visit",
+    "date": "2026-03-05",
+    "displayDate": "Mar 5",
+    "title": "Sick visit: respiratory illness with mild wheeze",
+    "short": "Oxygen saturation 97% · close follow-up",
+    "category": "visit",
+    "summary": "Dr. Ortiz evaluates Maya’s cough and records a viral respiratory illness with mild asthma symptoms.",
+    "details": [
+      "Vitals: Temperature 37.2°C; pulse 88; respiratory rate 18; oxygen saturation 97% on room air.",
+      "Examination: Mild expiratory wheeze without increased work of breathing. No focal chest findings documented.",
+      "Patient-specific plan: Existing inhaled controller and rescue plan reviewed; no oral steroid or antibiotic prescribed at this encounter.",
+      "Follow-up: RN check-in arranged. The clinician records escalation precautions for Maya and confirms she can reach the care team."
+    ],
+    "recordType": "Synthetic office encounter",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health",
+    "medication": "Budesonide; albuterol"
+  },
+  {
+    "id": "mar06-callback-scheduling",
+    "date": "2026-03-06",
+    "displayDate": "Mar 6",
+    "title": "Telephone: nurse callback window confirmed",
+    "short": "Front desk · reachable after work",
+    "category": "telephone",
+    "summary": "Scheduling staff arrange a reliable callback window after Maya misses the first outreach attempt.",
+    "details": [
+      "Nia Brooks, front desk: Documents that Maya was at work during the first call and requests an available time for the nurse.",
+      "Maya asks for a callback after 3:30 PM and confirms she can access MyChart during her break.",
+      "Staff action: Updates the callback task and sends it to Jonah Ellis; no symptom interpretation is made by front-desk staff.",
+      "Outcome: RN speaks with Maya later that day; she reports no interval deterioration at that check and the existing follow-up plan remains."
+    ],
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Nia Brooks · front desk / scheduling",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "mar10-worsening-message",
+    "date": "2026-03-10",
+    "displayDate": "Mar 10",
+    "title": "MyChart: cough is interrupting sleep",
+    "short": "Increasing rescue use · RN callback requested",
+    "category": "message",
+    "summary": "Maya reports a change from the stable symptoms described at her office visit.",
+    "details": [
+      "Maya Bennett, patient: “The cough is waking me now. I used the rescue inhaler more yesterday than I did last week.”",
+      "Jonah Ellis, RN: “I received your update and will call to assess the change. I have also sent the message to Dr. Ortiz.”",
+      "Maya Bennett: “I am available before my morning shift tomorrow.”",
+      "Thread outcome: March 11 telephone assessment arranged after same-day callback confirms she is comfortable at rest; the record does not treat the message as a completed physical evaluation."
+    ],
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Jonah Ellis, RN · clinical triage",
+    "institution": "Harborlight Demo Health",
+    "medication": "Albuterol"
+  },
+  {
+    "id": "mar11-respiratory-call",
+    "date": "2026-03-11",
+    "displayDate": "Mar 11",
+    "title": "Telephone: symptoms require reassessment",
+    "short": "Clinical triage · same-day reassessment offered",
+    "category": "telephone",
+    "summary": "The nurse documents worsening nighttime symptoms and discusses a same-day assessment with the physician.",
+    "details": [
+      "Patient report: Persistent wheeze, more frequent rescue inhaler use and disrupted sleep, without severe breathlessness at rest during the call.",
+      "RN and clinician disposition: Same-day in-person reassessment is offered; Maya is unable to attend the offered slot and accepts the earliest next-morning opening.",
+      "Care coordination: Dr. Ortiz reviews the call, speaks with Maya and records a patient-specific escalation plan for any worsening before that appointment.",
+      "Later course: Symptoms worsen overnight; the March 12 emergency encounter records the next evaluation. This call does not imply the subsequent deterioration was predictable."
+    ],
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Jonah Ellis, RN · clinical triage",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "mar12-ed",
+    "date": "2026-03-12",
+    "displayDate": "Mar 12",
+    "title": "Emergency care: acute asthma exacerbation",
+    "short": "Wheeze and breathlessness · admitted overnight",
     "category": "hospital",
-    "institution": "South Shore ED",
-    "summary": "Clancy presented to the emergency department for insomnia, anxiety and palpitations.",
+    "summary": "Maya presents to the fictional emergency department after her breathing worsens overnight.",
     "details": [
-      "Trazodone 50 mg was prescribed following the evaluation.",
-      "In a later clinical history, she reported that the treatment helped her fall asleep but did not maintain sleep."
+      "Arrival findings: Respiratory rate 26; pulse 112; oxygen saturation 91% on room air; diffuse expiratory wheeze and increased work of breathing.",
+      "Assessment: Acute asthma exacerbation associated with a respiratory viral illness; the team arranges hospital admission for oxygen, bronchodilator treatment and reassessment.",
+      "ED treatment record: Ipratropium–albuterol nebulizers administered and oral prednisone started. Supplemental oxygen is recorded.",
+      "Care continuity: Primary care receives an admission notification; the scheduled outpatient appointment is canceled by the care coordinator."
     ],
-    "caution": "The complete emergency-department chart is unavailable in this curated dataset.",
-    "recordType": "Curated hospital care summary"
+    "recordType": "Synthetic hospital encounter",
+    "clinician": "Casey Vale, MD · hospital medicine",
+    "institution": "Harborlight Demo Medical Center"
   },
   {
-    "id": "rx-nov16",
-    "date": "2022-11-16",
-    "displayDate": "November 16",
-    "title": "Trazodone prescribed after ED visit",
-    "short": "50 mg ×30",
+    "id": "mar12-hospital-results",
+    "date": "2026-03-12",
+    "displayDate": "Mar 12",
+    "title": "Hospital results: respiratory workup",
+    "short": "Rhinovirus detected · no focal infiltrate",
+    "category": "lab",
+    "summary": "Diagnostic results support the hospital team’s recorded respiratory assessment.",
+    "details": [
+      "Respiratory PCR: Rhinovirus detected; influenza A/B and SARS-CoV-2 not detected.",
+      "Chest radiograph: No focal air-space infiltrate or pleural effusion described in the synthetic radiology report.",
+      "Laboratory panel: Glucose 176 mg/dL; creatinine 0.79 mg/dL; potassium 4.0 mmol/L; white-cell count 9.8 ×10³/µL.",
+      "Result context: These fictional findings belong to the March 12 evaluation and do not describe any real test or patient."
+    ],
+    "recordType": "Synthetic laboratory / diagnostic result",
+    "clinician": "Casey Vale, MD · hospital medicine",
+    "institution": "Harborlight Demo Medical Center"
+  },
+  {
+    "id": "mar12-nebulizer",
+    "date": "2026-03-12",
+    "displayDate": "Mar 12",
+    "title": "Hospital medication: nebulized bronchodilators",
+    "short": "Administered in ED · continued during admission",
     "category": "medication",
-    "clinician": "Kayvon Izadpanah, MD",
-    "institution": "South Shore Health",
-    "summary": "Trazodone 50 mg, quantity 30, was filled after the South Shore emergency visit.",
+    "summary": "The medication administration record documents ipratropium–albuterol treatment during acute hospital care.",
     "details": [
-      "Clancy later described benefit for falling asleep but not staying asleep."
+      "Administered March 12: Ipratropium 0.5 mg / albuterol 2.5 mg per 3 mL nebulized treatments in the ED, with additional inpatient treatments through March 13.",
+      "Status: Administered medication in a synthetic hospital MAR, distinct from an outpatient prescription or patient report.",
+      "Disposition: Nebulized combination treatment is not prescribed for home use at discharge."
     ],
-    "medication": "Trazodone 50 mg",
-    "caution": "Duration and regularity of use are unknown.",
-    "recordType": "Curated medication summary"
+    "recordType": "Synthetic medication record",
+    "clinician": "Casey Vale, MD · hospital medicine",
+    "institution": "Harborlight Demo Medical Center",
+    "medication": "Ipratropium–albuterol nebulizer"
   },
   {
-    "id": "paul-contact",
-    "date": "2022-11-20",
-    "displayDate": "November 20",
-    "title": "Initial perinatal-service phone contact",
-    "short": "Sleep history and safety screening",
-    "category": "message",
-    "clinician": "Julie Paul, psychiatric NP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Julie Paul spoke with Clancy before the formal intake and reviewed anxiety, overwhelm, racing thoughts and fragmented sleep.",
-    "details": [
-      "Clancy described an initially well postpartum period and a preference to avoid long-term medication.",
-      "Responses to questions about self-harm, harm to others, hallucinations and immediate safety were negative.",
-      "She reported that lorazepam plus diphenhydramine had helped sleep.",
-      "Paul advised using the existing combination that night and arranged a next-day intake."
-    ],
-    "caution": "This was a patient-reported history and time-limited telephone safety screen.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "paul-intake",
-    "date": "2022-11-21",
-    "displayDate": "November 21",
-    "title": "Perinatal psychiatry intake",
-    "short": "In person · anxiety and sleep assessment",
-    "category": "visit",
-    "clinician": "Julie Paul, psychiatric NP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy described anxiety, overwhelm, racing thoughts, insomnia and prior sertraline intolerance.",
-    "details": [
-      "She denied suicidal and homicidal ideation and hallucinations; thought process was described as linear and goal-directed.",
-      "GAD-7 was 21/21; EPDS was 23/30, with a negative self-harm item.",
-      "She reported benefit from lorazepam plus diphenhydramine for sleep and no benefit from a CBD gummy.",
-      "Fluoxetine 10 mg for four days, increasing to 20 mg only if tolerated, was planned."
-    ],
-    "caution": "Screening scores measure reported symptom severity. The planned 20 mg fluoxetine step was not established as taken.",
-    "recordType": "Curated encounter summary"
-  },
-  {
-    "id": "rx-nov21",
-    "date": "2022-11-21",
-    "displayDate": "November 21",
-    "title": "Fluoxetine prescribed",
-    "short": "10 mg ×56 · cautious titration planned",
+    "id": "mar12-prednisone",
+    "date": "2026-03-12",
+    "displayDate": "Mar 12",
+    "title": "Hospital medication: short prednisone course",
+    "short": "40 mg daily · five-day course recorded",
     "category": "medication",
-    "clinician": "Julie Paul, psychiatric NP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Fluoxetine 10 mg was prescribed, with a 56-tablet supply filled.",
+    "summary": "The hospital physician orders a five-day prednisone course for the acute asthma episode.",
     "details": [
-      "The selection reflected Clancy’s report of prior benefit.",
-      "The intended increase to 20 mg depended on tolerability."
+      "Patient-specific order: Prednisone 40 mg orally daily, March 12 through March 16 inclusive.",
+      "Administration evidence: Hospital MAR records doses March 12, 13 and 14. Two remaining outpatient doses are prescribed at discharge.",
+      "Continuity: The discharge list clearly marks the stop date; this is not an ongoing maintenance medicine."
     ],
-    "medication": "Fluoxetine 10 mg; 20 mg planned if tolerated",
-    "caution": "Dispensing quantity does not establish the number or strength of doses taken.",
-    "recordType": "Curated medication summary"
+    "recordType": "Synthetic medication record",
+    "clinician": "Casey Vale, MD · hospital medicine",
+    "institution": "Harborlight Demo Medical Center",
+    "medication": "Prednisone 40 mg"
   },
   {
-    "id": "tufts-nov22",
-    "date": "2022-11-22",
-    "displayDate": "November 22",
-    "title": "Psychiatry follow-up: transition of care",
-    "short": "Telehealth · South Shore care reviewed",
-    "category": "visit",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy told Tufts that she had enrolled with South Shore’s perinatal service and planned to transfer psychiatric and therapy care there.",
-    "details": [
-      "She reported plans to start fluoxetine and continued as-needed lorazepam and diphenhydramine for sleep.",
-      "She denied suicidal and homicidal ideation; Tufts observed no psychosis."
-    ],
-    "caution": "Medication history was patient reported.",
-    "recordType": "Curated encounter summary"
-  },
-  {
-    "id": "fluoxetine-start-report",
-    "date": "2022-11-23",
-    "displayDate": "November 22–23",
-    "title": "Care-team contact: fluoxetine started",
-    "short": "November 22–23 · phone or MyChart",
-    "category": "message",
-    "clinician": "Julie Paul, psychiatric NP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy contacted Paul because she was nervous about starting fluoxetine; the following day she reported starting it on November 22.",
-    "details": [
-      "The communication medium is unresolved."
-    ],
-    "medication": "Fluoxetine 10 mg reportedly started",
-    "caution": "The reported start does not establish continuous adherence.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "nov25",
-    "date": "2022-11-25",
-    "displayDate": "November 25",
-    "title": "MyChart: fluoxetine stopped",
-    "short": "Sleep regimen revised",
-    "category": "message",
-    "clinician": "Julie Paul, psychiatric NP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Following a brief fluoxetine trial with worse sleep and feeling disconnected or spacey, Paul stopped fluoxetine and revised the sleep plan.",
-    "details": [
-      "Zolpidem, mirtazapine and clonazepam were prescribed.",
-      "Paul warned against combining clonazepam with lorazepam."
-    ],
-    "medication": "Fluoxetine stopped; sleep regimen revised",
-    "caution": "A temporal association does not establish the cause of symptoms.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "rx-nov25",
-    "date": "2022-11-25",
-    "displayDate": "November 25",
-    "title": "Revised sleep prescriptions",
-    "short": "Zolpidem · mirtazapine · clonazepam",
-    "category": "medication",
-    "clinician": "Julie Paul, psychiatric NP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Three prescriptions were dispensed during the sleep-regimen change.",
-    "details": [
-      "Zolpidem 5 mg ×1 for a single-dose trial.",
-      "Mirtazapine 7.5 mg ×30.",
-      "Clonazepam 0.5 mg ×14; instructions included not combining it with lorazepam."
-    ],
-    "medication": "Zolpidem 5 mg; mirtazapine 7.5 mg; clonazepam 0.5 mg",
-    "caution": "Zolpidem ingestion is unknown; later reports identify only specific nights of mirtazapine and clonazepam use.",
-    "recordType": "Curated medication summary"
-  },
-  {
-    "id": "msg-nov26",
-    "date": "2022-11-26",
-    "displayDate": "November 26",
-    "title": "MyChart: sleep with new regimen",
-    "short": "Mirtazapine 7.5 mg + clonazepam 0.5 mg reported",
-    "category": "message",
-    "clinician": "Julie Paul, psychiatric NP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy reported taking mirtazapine 7.5 mg with clonazepam 0.5 mg and sleeping.",
-    "details": [
-      "She asked about trying mirtazapine 15 mg."
-    ],
-    "medication": "Mirtazapine 7.5 mg + clonazepam 0.5 mg reported",
-    "caution": "This describes one reported night, not a continuous dosing record.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "disconnected",
-    "date": "2022-11-27",
-    "displayDate": "November 27",
-    "title": "MyChart: feeling disconnected",
-    "short": "Disconnection reported after sleep",
-    "category": "message",
-    "clinician": "Julie Paul, psychiatric NP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "After reporting mirtazapine 15 mg plus clonazepam 0.5 mg and sleep, Clancy described feeling disconnected from herself and reality.",
-    "details": [
-      "She reported two nights of clonazepam and considered stopping it.",
-      "Paul considered sedation or disorientation and supported stopping clonazepam."
-    ],
-    "medication": "Mirtazapine 15 mg + clonazepam 0.5 mg reported",
-    "caution": "The reported experience does not establish a diagnosis or a medication cause.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "panic",
-    "date": "2022-11-28",
-    "displayDate": "November 28",
-    "title": "Care-team contact: panic symptoms",
-    "short": "Phone or MyChart · higher-level care discussed",
-    "category": "message",
-    "clinician": "Julie Paul, psychiatric NP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy reported a panic attack. Paul discussed symptom management and recommended Women & Infants partial-hospital care.",
-    "details": [
-      "Clancy described practical difficulty attending the program.",
-      "The contact was associated with a progress note, but whether it occurred by phone or MyChart is uncertain."
-    ],
-    "caution": "The communication medium is unresolved.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "msg-nov29",
-    "date": "2022-11-29",
-    "displayDate": "November 29",
-    "title": "MyChart: limited sleep benefit",
-    "short": "Mirtazapine 15 mg + CBD reported",
-    "category": "message",
-    "clinician": "Julie Paul, psychiatric NP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Before the Jollotta assessment, Clancy reported only slight sleep benefit from mirtazapine 15 mg plus CBD.",
-    "details": [
-      "The CBD product and dose are unknown."
-    ],
-    "medication": "Mirtazapine 15 mg + CBD reported",
-    "caution": "Use and response are patient reported.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "jollotta-intake",
-    "date": "2022-11-29",
-    "displayDate": "November 29",
-    "title": "First assessment with Rebecca Jollotta",
-    "short": "Telehealth · fragmented sleep and intense anxiety",
-    "category": "visit",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy described fragmented sleep, disorientation, forgetfulness, feeling disconnected from her body and intense anxiety about sleep.",
-    "details": [
-      "EPDS was 17 and GAD-7 was 14.",
-      "She reported about two hours of sleep followed by several hours awake and occasional lorazepam use to return to sleep.",
-      "She declined offered zolpidem and hydroxyzine, preferring mirtazapine 15 mg with as-needed lorazepam.",
-      "No suicidal or homicidal ideation, mania, hallucinations, delusions or psychosis were observed or reported during this encounter."
-    ],
-    "caution": "Screening results and negative findings describe this encounter.",
-    "recordType": "Curated encounter summary"
-  },
-  {
-    "id": "quetiapine-start",
-    "date": "2022-11-30",
-    "displayDate": "November 30",
-    "title": "MyChart: asks to stop mirtazapine",
-    "short": "Worse depression and poor sleep",
-    "category": "message",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy asked to stop mirtazapine after approximately five nights, reporting worse depression and only about two hours of sleep.",
-    "details": [
-      "Jollotta proposed low-dose quetiapine for insomnia; a nurse called to review the plan.",
-      "Clancy agreed to collect the medication.",
-      "Care was transitioning from Paul to Jollotta.",
-      "A fluoxetine retrial was discussed but not established as started."
-    ],
-    "medication": "Quetiapine 25 mg planned",
-    "caution": "The initial quetiapine target was sleep.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "rx-nov30",
-    "date": "2022-11-30",
-    "displayDate": "November 30",
-    "title": "Quetiapine prescribed",
-    "short": "25 mg ×30 · sleep treatment",
-    "category": "medication",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Quetiapine 25 mg, quantity 30, was prescribed and filled for insomnia.",
-    "details": [
-      "The low-dose prescription does not establish a bipolar or psychotic diagnosis."
-    ],
-    "medication": "Quetiapine 25 mg",
-    "caution": "A fill does not establish immediate use.",
-    "recordType": "Curated medication summary"
-  },
-  {
-    "id": "intrusive",
-    "date": "2022-12-01",
-    "displayDate": "December 1",
-    "title": "MyChart: new intrusive thoughts",
-    "short": "Mirtazapine skipped; thought content unclear",
-    "category": "message",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy told Jollotta that she disliked mirtazapine and was having intrusive thoughts she had not previously experienced.",
-    "details": [
-      "She reported skipping mirtazapine and preferring fluoxetine with lorazepam and diphenhydramine.",
-      "She later planned mirtazapine 15 mg with quetiapine 25 mg.",
-      "The immediate message did not clearly establish the content of the thoughts."
-    ],
-    "caution": "The message alone cannot establish a specific symptom diagnosis.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "tufts-dec1",
-    "date": "2022-12-01",
-    "displayDate": "December 1",
-    "title": "Psychiatry follow-up: concern about worsening mood",
-    "short": "Telehealth · fear of developing suicidal thoughts",
-    "category": "visit",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy denied active suicidal ideation but described fear of approaching suicidal thoughts and a lack of improvement.",
-    "details": [
-      "She reviewed recent sleep medications and perceived side effects.",
-      "She reported a trazodone dose range of 50–150 mg with minimal effect; precise dates were not established.",
-      "Tufts advised using one medication manager.",
-      "Lamotrigine was discussed but not prescribed that day."
-    ],
-    "caution": "The medication history was patient reported and does not establish a dose-by-dose record.",
-    "recordType": "Curated encounter summary"
-  },
-  {
-    "id": "dec1-urgent-outreach",
-    "date": "2022-12-01",
-    "displayDate": "December 1",
-    "title": "Urgent appointment outreach",
-    "short": "Medication appointment requested; completion uncertain",
-    "category": "message",
-    "institution": "South Shore Health",
-    "summary": "Clancy requested an immediate medication appointment; staff offered an urgent slot but did not reach her in time to complete it.",
-    "details": [
-      "The available summary does not confirm a completed visit."
-    ],
-    "caution": "This is an outreach attempt, not a confirmed clinical encounter.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "death-thoughts",
-    "date": "2022-12-02",
-    "displayDate": "December 2",
-    "title": "MyChart: thoughts of wanting to die",
-    "short": "Intrusive thoughts and emotional numbness",
-    "category": "message",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "After reporting mirtazapine 15 mg and quetiapine 25 mg, Clancy described intrusive thoughts of wanting things to be over and indifference to dying.",
-    "details": [
-      "She reported taking lorazepam 1 mg, returning to sleep, and then no longer having the thoughts.",
-      "Jollotta provided crisis information, asked about support and recommended quetiapine 50 mg for sleep."
-    ],
-    "medication": "Mirtazapine + quetiapine; lorazepam 1 mg reported",
-    "caution": "The sequence is patient reported and does not establish medication causation.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "dec2-dukes",
-    "date": "2022-12-02",
-    "displayDate": "December 2",
-    "title": "Counseling intake",
-    "short": "In person · anxiety, sleep loss and passive suicidal thoughts",
-    "category": "visit",
-    "clinician": "Latiesha Dukes, LMHC",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy reported anxiety, depressive symptoms, severe sleep loss and frequent passive suicidal ideation without a plan.",
-    "details": [
-      "Dukes described low mood, numbness and tearfulness, with thought process and intellectual functioning within normal limits.",
-      "Reported symptoms included panic, impaired attention, two to four hours of sleep, poor appetite and approximately 10 pounds of weight loss in a month.",
-      "Clancy expressed concern about lorazepam dependence; the substance-use assessment did not identify a substance-use disorder.",
-      "Weekly bridge therapy, continued medication management, intensive outpatient or partial-hospital care, CBT resources and crisis instructions were planned."
-    ],
-    "caution": "Medication use was patient reported; the complete medication list was not independently reconciled.",
-    "recordType": "Curated encounter summary"
-  },
-  {
-    "id": "dec3",
-    "date": "2022-12-03",
-    "displayDate": "December 3",
-    "title": "MyChart: severe depression continues",
-    "short": "Brief relief after reported lorazepam dose",
-    "category": "message",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy reported approximately four hours and 45 minutes of sleep with continuing severe depression and intrusive thoughts.",
-    "details": [
-      "She later reported taking lorazepam 0.5 mg and feeling better."
-    ],
-    "medication": "Lorazepam 0.5 mg reported",
-    "caution": "Response after a dose does not establish the underlying diagnosis.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "dec5-aspire",
-    "date": "2022-12-05",
-    "displayDate": "December 5",
-    "title": "Counseling follow-up after crisis contact",
-    "short": "Telehealth · current suicidal ideation denied",
-    "category": "visit",
-    "clinician": "Latiesha Dukes, LMHC",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy told Dukes that a difficult weekend of thoughts of wanting to die or no longer be present had led to a virtual Aspire crisis evaluation.",
-    "details": [
-      "She reported that Aspire recommended a day program; the underlying Aspire assessment is unavailable.",
-      "At this follow-up she denied current suicidal ideation.",
-      "Dukes did not observe psychosis, mania or an immediate crisis.",
-      "Her spouse joined the visit; intensive outpatient or partial-hospital care and sleep hygiene were discussed.",
-      "Clancy requested psychological testing for additional diagnostic input."
-    ],
-    "caution": "Aspire’s evaluation and recommendation are known through the patient’s report to her care team.",
-    "recordType": "Curated encounter summary"
-  },
-  {
-    "id": "dec6",
-    "date": "2022-12-06",
-    "displayDate": "December 6",
-    "title": "Psychiatry assessment: diagnostic review",
-    "short": "In person · sleep and activation history",
-    "category": "visit",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Jollotta reviewed a reported period of little sleep without fatigue during earlier sertraline use and considered bipolar disorder in the differential.",
-    "details": [
-      "The prior Mood Disorder Questionnaire was negative, and diagnostic criteria for bipolar disorder were not established.",
-      "EPDS was 21; mood tracking was discussed.",
-      "The encounter did not identify mania, hallucinations, delusions, psychosis or a current suicidal plan or intent.",
-      "Jollotta discussed reconsidering fluoxetine and replacing lorazepam with longer-half-life diazepam for tapering."
-    ],
-    "caution": "Bipolar disorder was a possibility under assessment, not a confirmed diagnosis.",
-    "recordType": "Curated encounter summary"
-  },
-  {
-    "id": "rx-dec6",
-    "date": "2022-12-06",
-    "displayDate": "December 6",
-    "title": "Diazepam prescribed",
-    "short": "5 mg · dispensing quantity uncertain",
-    "category": "medication",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Jollotta initiated diazepam as part of a longer-half-life benzodiazepine taper strategy.",
-    "details": [
-      "A 5 mg fill is represented in the existing timeline; its quantity is uncertain."
-    ],
-    "medication": "Diazepam 5 mg",
-    "caution": "Dispensing quantity and actual use are unresolved.",
-    "recordType": "Curated medication summary"
-  },
-  {
-    "id": "dec7",
-    "date": "2022-12-07",
-    "displayDate": "December 7",
-    "title": "MyChart: medication plan revised",
-    "short": "Fluoxetine held; quetiapine titration proposed",
-    "category": "message",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "After reporting approximately four hours of sleep with diazepam and melatonin, Clancy again said she was not tired. Jollotta held fluoxetine and considered possible mixed or hypomanic symptoms.",
-    "details": [
-      "Quetiapine was proposed at 100, 200, 300 and 400 mg on successive nights.",
-      "Olanzapine with fluoxetine was discussed but not prescribed or taken.",
-      "Diazepam tapering continued."
-    ],
-    "medication": "Quetiapine titration planned; fluoxetine held",
-    "caution": "The 400 mg target was planned; use at that dose was not established.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "rx-dec7",
-    "date": "2022-12-07",
-    "displayDate": "December 7",
-    "title": "Quetiapine and diazepam fills",
-    "short": "Quetiapine 100 mg · diazepam 5 mg ×2",
-    "category": "medication",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Quetiapine 100 mg and two 5 mg diazepam tablets were filled.",
-    "details": [
-      "The quetiapine dispensing quantity is uncertain in the curated material.",
-      "The same-day quetiapine escalation was a treatment plan."
-    ],
-    "medication": "Quetiapine 100 mg; diazepam 5 mg",
-    "caution": "The fill does not establish later use of the 300 or 400 mg targets.",
-    "recordType": "Curated medication summary"
-  },
-  {
-    "id": "msg-dec8",
-    "date": "2022-12-08",
-    "displayDate": "December 8",
-    "title": "MyChart: improved sleep, then panic",
-    "short": "Diazepam + quetiapine reported; doses unknown",
-    "category": "message",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy reported taking diazepam and quetiapine and sleeping from about 9 p.m. to 5 a.m. with awakenings, followed by panic.",
-    "details": [
-      "She asked for a slower diazepam taper.",
-      "The message did not identify the doses taken."
-    ],
-    "medication": "Diazepam + quetiapine reported",
-    "caution": "Planned titration steps cannot be used to fill in unreported doses.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "call-dec9",
-    "date": "2022-12-09",
-    "displayDate": "December 9",
-    "title": "Phone follow-up: mood and safety",
-    "short": "Better sleep; suicidal thoughts without plan or intent",
-    "category": "message",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Jollotta spoke with Clancy and her spouse about improved sleep alongside panic, numbness, intrusive thoughts and suicidal thoughts without plan or intent.",
-    "details": [
-      "Women & Infants partial-hospital care was encouraged.",
-      "The quetiapine plan continued while a possible mixed or activated state was assessed."
-    ],
-    "caution": "The diagnostic formulation remained uncertain.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "rx-dec9",
-    "date": "2022-12-09",
-    "displayDate": "December 9",
-    "title": "Diazepam fill",
-    "short": "5 mg ×8",
-    "category": "medication",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "A supply of eight diazepam 5 mg tablets was filled.",
-    "details": [
-      "The fill was part of the benzodiazepine taper strategy."
-    ],
-    "medication": "Diazepam 5 mg",
-    "caution": "Dispensing does not establish the dose taken each night.",
-    "recordType": "Curated medication summary"
-  },
-  {
-    "id": "dec12",
-    "date": "2022-12-12",
-    "displayDate": "December 12",
-    "title": "MyChart: sleep improves, low mood persists",
-    "short": "Quetiapine 200 mg + diazepam 2.5 mg reported",
-    "category": "message",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy reported taking quetiapine 200 mg plus diazepam 2.5 mg for three nights, with seven to eight hours of deep sleep.",
-    "details": [
-      "She continued to describe marked depression and poor motivation.",
-      "The reported quetiapine dose was 200 mg."
-    ],
-    "medication": "Quetiapine 200 mg + diazepam 2.5 mg reported",
-    "caution": "The earlier planned 400 mg target was not established as taken.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "dec12-dukes",
-    "date": "2022-12-12",
-    "displayDate": "December 12",
-    "title": "Counseling follow-up: persistent suicidal ideation",
-    "short": "Telehealth · referrals for structured care",
-    "category": "visit",
-    "clinician": "Latiesha Dukes, LMHC",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy reported continuing suicidal ideation without a plan or attempt and a second Aspire crisis contact during another difficult weekend.",
-    "details": [
-      "Dukes reviewed support from family, prior use of crisis services and willingness to follow treatment recommendations.",
-      "Clancy reported a plan to begin a Norwell partial-hospital program on December 20.",
-      "With consent, Dukes initiated a separate Women & Infants referral.",
-      "Dukes did not identify a need for an emergency safety intervention during this encounter."
-    ],
-    "caution": "The Aspire contact and program plans were patient reported; safety findings apply to this encounter.",
-    "recordType": "Curated encounter summary"
-  },
-  {
-    "id": "dec13",
-    "date": "2022-12-13",
-    "displayDate": "December 13",
-    "title": "Psychiatry follow-up: hopelessness and numbness",
-    "short": "Telehealth · sleep restored, motivation remains low",
-    "category": "visit",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy reported seven to nine hours of sleep but persistent hopelessness, numbness and poor motivation.",
-    "details": [
-      "She denied current suicidal ideation.",
-      "The EPDS self-harm item indicated thoughts sometimes during the preceding week.",
-      "Jollotta did not observe mania or psychosis."
-    ],
-    "caution": "Current denial and symptoms reported over the prior week cover different time windows.",
-    "recordType": "Curated encounter summary"
-  },
-  {
-    "id": "rx-dec13",
-    "date": "2022-12-13",
-    "displayDate": "December 13",
-    "title": "Diazepam taper prescription",
-    "short": "2 mg ×7",
-    "category": "medication",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Diazepam 2 mg, quantity seven, was filled as tapering continued.",
-    "details": [
-      "The associated plan was 2 mg nightly."
-    ],
-    "medication": "Diazepam 2 mg",
-    "caution": "The planned dose does not establish adherence.",
-    "recordType": "Curated medication summary"
-  },
-  {
-    "id": "dec15",
-    "date": "2022-12-15",
-    "displayDate": "December 15",
-    "title": "Phone contact: higher-level care discussed",
-    "short": "Persistent suicidal thoughts; no active plan",
-    "category": "message",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy and her spouse described a particularly difficult day with persistent intrusive suicidal thoughts but no active plan.",
-    "details": [
-      "Both agreed that a higher level of care might be needed.",
-      "Jollotta discussed MGH emergency assessment, possible McLean care and sharing treatment information."
-    ],
-    "caution": "This summarizes the care-team exchange; it does not reconstruct the full emergency assessment.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "mgh-dec15",
-    "date": "2022-12-15",
-    "displayDate": "December 15",
-    "title": "MGH emergency assessment",
-    "short": "Evaluation after higher-level care discussion",
+    "id": "mar13-inpatient",
+    "date": "2026-03-13",
+    "displayDate": "Mar 13",
+    "title": "Hospital day 2: breathing improves",
+    "short": "Oxygen weaned · temporary glucose elevations",
     "category": "hospital",
-    "institution": "Massachusetts General Hospital",
-    "summary": "Clancy attended the MGH emergency department after the December 15 care-team discussion.",
+    "summary": "The inpatient team documents improved breathing while monitoring glucose during systemic steroid treatment.",
     "details": [
-      "Subsequent clinical follow-up describes plans to pursue Women & Infants care.",
-      "The complete MGH assessment and disposition documentation are unavailable in this curated dataset."
+      "Respiratory course: Oxygen is weaned; oxygen saturation is 95% on room air at rest. Bronchodilator treatments are spaced as symptoms improve.",
+      "Diabetes management: Home metformin is held during the acute illness. Point-of-care glucose reaches 268 mg/dL after steroid initiation; temporary correction insulin is ordered.",
+      "Medication reconciliation: Losartan and atorvastatin remain on the hospital list; discharge controller selection is discussed with respiratory therapy.",
+      "Care planning: Inhaler technique teaching, pharmacy access review and a primary-care follow-up appointment are started before discharge."
     ],
-    "caution": "Exact recommendations and discharge details cannot be verified from the original hospital chart.",
-    "recordType": "Curated hospital care summary"
+    "recordType": "Synthetic hospital encounter",
+    "clinician": "Casey Vale, MD · hospital medicine",
+    "institution": "Harborlight Demo Medical Center"
   },
   {
-    "id": "tufts-dec16",
-    "date": "2022-12-16",
-    "displayDate": "December 16",
-    "title": "Psychiatry follow-up after MGH",
-    "short": "Telehealth · depression despite improved sleep",
-    "category": "visit",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy reported that sleep had improved while daytime depression, poor motivation and hopelessness persisted.",
-    "details": [
-      "She described prior suicidal thoughts in the context of hopelessness and fear of not improving, without intent or plan.",
-      "She reported quetiapine 200 mg with diazepam and was awaiting Women & Infants care.",
-      "Tufts prescribed lamotrigine 25 mg."
-    ],
-    "caution": "Reported use, a prescription and a planned dose change are distinct.",
-    "recordType": "Curated encounter summary"
-  },
-  {
-    "id": "dec16",
-    "date": "2022-12-16",
-    "displayDate": "December 16",
-    "title": "MyChart: medication plan after MGH",
-    "short": "Quetiapine target increased; lamotrigine discussed",
-    "category": "message",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy told Jollotta that quetiapine 200 mg plus diazepam 2 mg helped sleep but had not improved mood.",
-    "details": [
-      "Jollotta recommended quetiapine 300 mg.",
-      "Clancy asked about Tufts’s recommendation for lamotrigine 25 mg.",
-      "Jollotta endorsed the plan and discussed rash precautions and gradual titration."
-    ],
-    "medication": "Lamotrigine 25 mg endorsed; quetiapine 300 mg planned",
-    "caution": "Neither the endorsement nor the quetiapine target establishes ingestion or a confirmed diagnosis.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "rx-dec16",
-    "date": "2022-12-16",
-    "displayDate": "December 16",
-    "title": "Lamotrigine prescribed and filled",
-    "short": "25 mg ×30 · use unknown",
+    "id": "mar13-inpatient-insulin",
+    "date": "2026-03-13",
+    "displayDate": "Mar 13",
+    "title": "Hospital medication: temporary correction insulin",
+    "short": "Lispro administered · no home insulin plan",
     "category": "medication",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Tufts prescribed lamotrigine 25 mg, and a 30-tablet supply was filled.",
+    "summary": "Insulin lispro is used briefly for elevated glucose during the asthma admission.",
     "details": [
-      "Jollotta endorsed the plan and provided counseling about rash and slow titration.",
-      "Whether Clancy took lamotrigine is not established within the selected treatment history."
+      "Synthetic MAR: Correction insulin lispro doses administered March 13 and 14 under the inpatient protocol; glucose values and doses are retained in the fictional hospital record.",
+      "Context: Acute illness and systemic steroid treatment coincide with higher glucose readings; this record does not claim a single proven cause.",
+      "Discharge decision: Insulin is discontinued before discharge. Maya is not given an outpatient insulin prescription."
     ],
-    "medication": "Lamotrigine 25 mg",
-    "caution": "The prescription and fill do not establish use.",
-    "recordType": "Curated medication summary"
+    "recordType": "Synthetic medication record",
+    "clinician": "Casey Vale, MD · hospital medicine",
+    "institution": "Harborlight Demo Medical Center",
+    "medication": "Insulin lispro · inpatient only"
   },
   {
-    "id": "msg-dec19",
-    "date": "2022-12-19",
-    "displayDate": "December 19",
-    "title": "MyChart: intermittent diazepam use",
-    "short": "2 mg every other night reported",
-    "category": "message",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy reported using diazepam 2 mg every other night and asked for a refill before Women & Infants care.",
-    "details": [
-      "Jollotta had recommended daily dosing."
-    ],
-    "medication": "Diazepam 2 mg every other night reported",
-    "caution": "The message is not a complete dosing record.",
-    "recordType": "Curated care communication"
-  },
-  {
-    "id": "dec19-dukes",
-    "date": "2022-12-19",
-    "displayDate": "December 19",
-    "title": "Counseling follow-up: partial improvement",
-    "short": "Telehealth · engagement improves; low mood remains",
-    "category": "visit",
-    "clinician": "Latiesha Dukes, LMHC",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy reported continuing low mood and numbness, with no suicidal ideation or crisis need over the preceding weekend and some improvement in sleep.",
-    "details": [
-      "Dukes described greater engagement and an ability to smile and laugh.",
-      "Low mood and numbness still affected most of the day.",
-      "Women & Infants contact and referral plans were reviewed.",
-      "The counselor did not yet have the full account of the preceding MGH emergency visit."
-    ],
-    "caution": "Improved engagement does not by itself establish recovery.",
-    "recordType": "Curated encounter summary"
-  },
-  {
-    "id": "rx-dec19",
-    "date": "2022-12-19",
-    "displayDate": "December 19",
-    "title": "Quetiapine ER and diazepam fills",
-    "short": "300 mg ×30 · 2 mg ×14",
-    "category": "medication",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Quetiapine ER 300 mg, quantity 30, and diazepam 2 mg, quantity 14, were filled.",
-    "details": [
-      "The quetiapine fill followed a recommendation to increase the dose."
-    ],
-    "medication": "Quetiapine ER 300 mg; diazepam 2 mg",
-    "caution": "The 300 mg fill does not establish an increase from the previously reported 200 mg dose.",
-    "recordType": "Curated medication summary"
-  },
-  {
-    "id": "wi",
-    "date": "2022-12-20",
-    "displayDate": "December 20",
-    "title": "Women & Infants program assessment",
-    "short": "Perinatal program pathway reviewed",
+    "id": "mar14-discharge",
+    "date": "2026-03-14",
+    "displayDate": "Mar 14",
+    "title": "Hospital discharge: return home with one plan",
+    "short": "Asthma improved · follow-up and access arranged",
     "category": "hospital",
-    "institution": "Women & Infants",
-    "summary": "Clancy attended a Women & Infants program assessment and subsequently continued planning outpatient care.",
+    "summary": "Maya is discharged after improvement, with a reconciled medication list and named follow-up owners.",
     "details": [
-      "A general partial-hospital program was discussed as an alternative.",
-      "The complete assessment record is unavailable in this curated dataset."
+      "Discharge condition: Oxygen saturation 97% on room air at rest and 95% during hallway walking; breathing comfortable and oral intake adequate.",
+      "Diagnosis: Acute asthma exacerbation associated with rhinovirus infection; type 2 diabetes with transient inpatient hyperglycemia.",
+      "Plan recorded: Finish the two remaining prednisone doses through March 16; use the new budesonide–formoterol maintenance prescription and the separate albuterol rescue prescription.",
+      "Transition tasks: RN outreach March 16; pharmacist March 19; PCP March 20; pulmonology referral sent.",
+      "Access: A seven-day hospital bridge supply of the new controller inhaler is dispensed while retail formulary authorization is pending."
     ],
-    "caution": "Program recommendations are summarized from the existing timeline and have not been verified against the original chart.",
-    "recordType": "Curated hospital care summary"
+    "recordType": "Synthetic hospital encounter",
+    "clinician": "Casey Vale, MD · hospital medicine",
+    "institution": "Harborlight Demo Medical Center"
   },
   {
-    "id": "taper",
-    "date": "2022-12-21",
-    "displayDate": "December 21",
-    "title": "MyChart: quetiapine taper plan",
-    "short": "200 → 100 → 50 mg → stop",
+    "id": "mar14-controller-rx",
+    "date": "2026-03-14",
+    "displayDate": "Mar 14",
+    "title": "Discharge prescription: controller inhaler updated",
+    "short": "Budesonide–formoterol · bridge supply dispensed",
+    "category": "medication",
+    "summary": "The hospital team replaces the prior budesonide-only inhaler with a combination maintenance inhaler.",
+    "details": [
+      "Prescription: Budesonide–formoterol 80/4.5 mcg, two puffs twice daily for Maya’s maintenance regimen; albuterol remains the separately documented rescue medicine.",
+      "Reconciliation: The budesonide-only inhaler is discontinued to avoid duplicate controller therapy.",
+      "Dispensing: Seven-day hospital bridge supply documented March 14. The outpatient pharmacy requests prior authorization for the selected product.",
+      "Evidence: The prescription, bridge dispensing and later patient-reported use are separate records."
+    ],
+    "recordType": "Synthetic medication record",
+    "clinician": "Casey Vale, MD · hospital medicine",
+    "institution": "Harborlight Demo Medical Center",
+    "medication": "Budesonide–formoterol 80/4.5 mcg; budesonide discontinued"
+  },
+  {
+    "id": "mar14-reconciliation",
+    "date": "2026-03-14",
+    "displayDate": "Mar 14",
+    "title": "Discharge medication reconciliation",
+    "short": "Continue, replace, finish and stop clearly labeled",
+    "category": "hospital",
+    "summary": "The discharge pharmacist reconciles the hospital and outpatient lists with Maya using teach-back.",
+    "details": [
+      "Continue / resume: Metformin ER 1,500 mg with the evening meal resumes March 14 after the acute hold; losartan 50 mg daily and atorvastatin 20 mg nightly continue.",
+      "Replace: Budesonide-only inhaler stops; budesonide–formoterol maintenance inhaler starts. Albuterol remains available under the individualized rescue plan.",
+      "Finish: Prednisone 40 mg on March 15 and 16; two doses dispensed. Stop: Inpatient ipratropium–albuterol nebulizers and insulin lispro.",
+      "Teach-back: Maya identifies the new inhaler, the stopped inhaler and the prednisone stop date. The active list and discharge summary are released to MyChart.",
+      "Pending task: Prior authorization tracked by the outpatient pharmacist; the bridge supply covers the expected processing interval."
+    ],
+    "recordType": "Synthetic hospital encounter",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Medical Center"
+  },
+  {
+    "id": "mar16-transition-call",
+    "date": "2026-03-16",
+    "displayDate": "Mar 16",
+    "title": "Telephone: post-discharge transition check",
+    "short": "RN outreach · symptoms and medicines reviewed",
+    "category": "telephone",
+    "summary": "The transitional-care nurse checks that the discharge plan is usable at home.",
+    "details": [
+      "Maya reports easier breathing, sleeping through the prior night and taking the final prescribed prednisone dose that morning.",
+      "Medication review: She identifies the combination inhaler, confirms she stopped budesonide-only therapy and reports resuming metformin.",
+      "Access check: The bridge inhaler is available at home; retail authorization is still pending. RN escalates the pending item to Priya Soren.",
+      "Appointments: Pharmacist March 19 and PCP March 20 confirmed. No unresolved transportation barrier is reported."
+    ],
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Jonah Ellis, RN · clinical triage",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "mar16-prior-auth",
+    "date": "2026-03-16",
+    "displayDate": "Mar 16",
+    "title": "Pharmacy access: controller authorization submitted",
+    "short": "Bridge supply in place · status tracked",
+    "category": "medication",
+    "summary": "The pharmacist submits the requested prior authorization for the new maintenance inhaler.",
+    "details": [
+      "Demo payer request: The selected budesonide–formoterol product requires documentation of the discharge regimen and previous budesonide therapy.",
+      "Pharmacist action: Submits the discharge summary, prior controller history and prescription details; records the request as pending.",
+      "Continuity: Maya has the hospital bridge supply. No missed controller doses are reported during this interval.",
+      "Next step: Pharmacy follow-up task assigned for March 17. An approval is not assumed before the response arrives."
+    ],
+    "recordType": "Synthetic medication record",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Health",
+    "medication": "Budesonide–formoterol · prior authorization"
+  },
+  {
+    "id": "mar17-prior-auth-approved",
+    "date": "2026-03-17",
+    "displayDate": "Mar 17",
+    "title": "Pharmacy access: approved and dispensed",
+    "short": "Controller inhaler · pickup confirmed",
+    "category": "medication",
+    "summary": "The demo payer approves the controller request and the outpatient pharmacy dispenses a full inhaler.",
+    "details": [
+      "Authorization status: Approved for the prescribed budesonide–formoterol product through the remainder of the fictional demonstration period.",
+      "Dispensing record: One 120-actuation inhaler dispensed March 17; at the prescribed maintenance dose this represents a 30-day supply.",
+      "Patient confirmation: Maya acknowledges pickup in MyChart that evening; the pending access task is closed.",
+      "Evidence distinction: Approval establishes coverage and dispensing establishes supply; later use is documented by patient report."
+    ],
+    "recordType": "Synthetic medication record",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Pharmacy",
+    "medication": "Budesonide–formoterol 80/4.5 mcg"
+  },
+  {
+    "id": "mar18-inhaler-message",
+    "date": "2026-03-18",
+    "displayDate": "Mar 18",
+    "title": "MyChart: “Which inhaler stays on my list?”",
+    "short": "Discharge instructions clarified in one thread",
     "category": "message",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Jollotta sent a plan for quetiapine 200 mg for four nights, 100 mg for four nights, 50 mg for four nights, then discontinuation.",
+    "summary": "Maya asks the pharmacist to resolve the old and new inhaler names shown in her medication history.",
     "details": [
-      "A nurse reviewed the possibility of worsening mood or sleep and confirmed that Clancy still wished to taper.",
-      "DBT-group information was provided."
+      "Maya Bennett, patient: “I picked up the new inhaler. The old budesonide still appears under past prescriptions. I stopped it, but can you make sure I am reading the list correctly?”",
+      "Priya Soren, PharmD: “Yes. The old budesonide-only prescription is now marked discontinued. Your active maintenance prescription is budesonide–formoterol, and albuterol is listed separately as your rescue inhaler.”",
+      "Maya Bennett: “That matches the discharge sheet. I finished prednisone on Monday and am not using any insulin at home.”",
+      "Priya Soren, PharmD: “I updated the reconciliation notes and will review the devices with you tomorrow.”",
+      "Thread outcome: Historical entries retained with clear status; no duplicate controller remains active."
     ],
-    "medication": "Quetiapine taper planned",
-    "caution": "The intended taper schedule does not establish every dose taken.",
-    "recordType": "Curated care communication"
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Health",
+    "medication": "Budesonide; budesonide–formoterol; prednisone; insulin lispro"
   },
   {
-    "id": "rx-dec21",
-    "date": "2022-12-21",
-    "displayDate": "December 21",
-    "title": "Quetiapine taper supply",
-    "short": "100 mg ×14",
-    "category": "medication",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Quetiapine 100 mg, quantity 14, was filled to support the taper.",
+    "id": "mar19-pharmacist-transition",
+    "date": "2026-03-19",
+    "displayDate": "Mar 19",
+    "title": "Pharmacist: close the discharge medication loop",
+    "short": "Technique, access and stop dates verified",
+    "category": "visit",
+    "summary": "The pharmacist completes a post-hospital medication review using bottles, devices and the discharge list.",
     "details": [
-      "The planned steps were 200, 100 and 50 mg, then discontinuation."
+      "Patient-reported regimen matches the reconciled list: Metformin ER 1,500 mg, losartan 50 mg, atorvastatin 20 mg, budesonide–formoterol maintenance and albuterol as needed.",
+      "Completed / stopped: Prednisone finished March 16; old budesonide inhaler discontinued; no outpatient nebulized ipratropium–albuterol or insulin lispro use.",
+      "Technique: Maya demonstrates the maintenance inhaler with a spacer; the pharmacist records correction of an overly rapid inhalation and successful repeat demonstration.",
+      "Access: Approved retail inhaler is in hand; refill reminder set. No reported gap between bridge and retail supplies.",
+      "Handoff: Summary routed to Dr. Ortiz before the next-day transition visit."
     ],
-    "medication": "Quetiapine 100 mg",
-    "caution": "Supply does not establish adherence to the schedule.",
-    "recordType": "Curated medication summary"
+    "recordType": "Synthetic office encounter",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "rx-dec22",
-    "date": "2022-12-22",
-    "displayDate": "December 22",
-    "title": "Additional quetiapine taper supply",
-    "short": "25 mg ×14",
-    "category": "medication",
-    "clinician": "Rebecca H. Jollotta, CNP",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Quetiapine 25 mg, quantity 14, was filled as part of the taper supply.",
+    "id": "mar20-transition-visit",
+    "date": "2026-03-20",
+    "displayDate": "Mar 20",
+    "title": "Primary care: hospital follow-up",
+    "short": "Breathing near baseline · recovery plan reviewed",
+    "category": "visit",
+    "summary": "Dr. Ortiz reviews the hospital course, medication reconciliation and recovery progress.",
     "details": [
-      "The smaller tablets supported planned dose reductions."
+      "Vitals: BP 132/82 mmHg; pulse 80; oxygen saturation 98% on room air. Mild residual cough without wheeze on examination.",
+      "Patient report: Sleep and activity tolerance improving; rescue inhaler used once since discharge; no new medication access issue.",
+      "Diabetes: Home readings during the short post-discharge monitoring period are trending down after prednisone completion. Outpatient insulin is not started.",
+      "Plan: Continue the reconciled regimen, complete a metabolic panel and attend pulmonary follow-up. Return-to-work needs are discussed and documented.",
+      "Care ownership: PCP manages diabetes and BP; pulmonology evaluates asthma recovery; pharmacist maintains the consolidated medication list."
     ],
-    "medication": "Quetiapine 25 mg",
-    "caution": "A dispensing event does not establish ingestion.",
-    "recordType": "Curated medication summary"
+    "recordType": "Synthetic office encounter",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "dec27-dukes",
-    "date": "2022-12-27",
-    "displayDate": "December 27",
-    "title": "Counseling phone follow-up",
-    "short": "Referral completed; medication concerns redirected",
+    "id": "mar23-pulmonary-scheduling",
+    "date": "2026-03-23",
+    "displayDate": "Mar 23",
+    "title": "Telephone: pulmonary referral booked",
+    "short": "Referral coordinator · report transfer complete",
+    "category": "telephone",
+    "summary": "Scheduling staff confirm the pulmonary consultation and make the hospital summary available to the specialist.",
+    "details": [
+      "Nia Brooks, referral coordination: Books March 30 with Dr. Chen and verifies receipt of the discharge summary and medication reconciliation.",
+      "Maya asks about parking and whether to bring the new inhaler; staff provide the fictional clinic’s arrival instructions and relay the request for device review.",
+      "Clinical questions about inhaler timing before lung testing are routed to the pulmonary team.",
+      "Outcome: Consultation confirmed; diagnostic testing will be ordered by the specialist as appropriate."
+    ],
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Nia Brooks · front desk / scheduling",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "mar24-glucose-message",
+    "date": "2026-03-24",
+    "displayDate": "Mar 24",
+    "title": "MyChart: glucose trend after the steroid course",
+    "short": "Short monitoring period reviewed by PCP",
     "category": "message",
-    "clinician": "Latiesha Dukes, LMHC",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Dukes contacted Clancy about referral completion and, with her consent, spoke with her spouse about prescription concerns.",
+    "summary": "Maya sends the temporary home glucose log requested during the transition visit.",
     "details": [
-      "Dukes redirected medication-management questions to the prescribing clinician."
+      "Maya Bennett, patient: “The morning readings in the last three days were 139, 132 and 128. I finished the steroid on March 16.”",
+      "Lena Ortiz, MD: “I reviewed the log and the discharge summary. We will keep your existing metformin prescription and review the planned April A1c.”",
+      "Maya Bennett: “Thank you. I am glad the hospital insulin is not something I need to refill.”",
+      "Lena Ortiz, MD: “Correct; the insulin was an inpatient-only treatment and is listed as stopped on your discharge record.”",
+      "Thread outcome: Temporary monitoring history documented; no new diabetes drug added."
     ],
-    "caution": "This contact documents coordination and concerns, not a new prescription or medication reconciliation.",
-    "recordType": "Curated care communication"
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health",
+    "medication": "Metformin ER; prednisone; insulin lispro"
   },
   {
-    "id": "call-dec30",
-    "date": "2022-12-30",
-    "displayDate": "December 30",
-    "title": "Clinic phone contact: hospital placement",
-    "short": "Family seeks guidance about McLean admission",
+    "id": "mar26-metabolic-panel",
+    "date": "2026-03-26",
+    "displayDate": "Mar 26",
+    "title": "Recovery laboratory check",
+    "short": "Glucose 127 · creatinine 0.78",
+    "category": "lab",
+    "summary": "The recovery panel is available before the pulmonary consultation and April diabetes review.",
+    "details": [
+      "Glucose: 127 mg/dL, fasting; creatinine: 0.78 mg/dL; eGFR: 97 mL/min/1.73 m²; potassium: 4.2 mmol/L.",
+      "Clinician interpretation: Kidney function remains stable after the hospitalization and metformin resumption.",
+      "Result workflow: Final panel released to MyChart and reviewed by Dr. Ortiz.",
+      "Context: This single glucose value does not replace the planned longitudinal HbA1c measurement."
+    ],
+    "recordType": "Synthetic laboratory / diagnostic result",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "mar27-recovery-message",
+    "date": "2026-03-27",
+    "displayDate": "Mar 27",
+    "title": "MyChart: back to the morning routine",
+    "short": "BP log and return-to-work update",
     "category": "message",
-    "clinician": "South Shore clinic staff",
-    "institution": "South Shore Perinatal Behavioral Health",
-    "summary": "Clancy’s spouse called the South Shore clinic for guidance on McLean placement.",
+    "summary": "Maya reports improved function after the hospital episode and confirms upcoming care.",
     "details": [
-      "The clinic entry described Clancy as safe at the time of the call.",
-      "Staff advised the emergency-department or emergency-services pathway because beds could not be held."
+      "Maya Bennett, patient: “I am back for shorter library shifts and walking one block at lunch. My BP average this week was 130/81.”",
+      "Jonah Ellis, RN: “I added your update and readings to the record. Your pulmonary visit is confirmed for Monday.”",
+      "Maya Bennett: “I have both inhalers and the spacer ready to bring.”",
+      "Thread outcome: Recovery update shared with PCP and pulmonology; no medication change."
     ],
-    "caution": "This is a family report to the clinic, not a direct mental-status assessment.",
-    "recordType": "Curated care communication"
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Jonah Ellis, RN · clinical triage",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "mgh-dec30",
-    "date": "2022-12-30",
-    "displayDate": "December 30",
-    "title": "MGH presentation before transfer",
-    "short": "Late December · exact date uncertain",
-    "category": "hospital",
-    "institution": "MGH",
-    "summary": "Clancy presented to MGH before the January 1 voluntary transfer to McLean.",
-    "details": [
-      "A December 30 clinic contact documents the family seeking guidance on McLean admission.",
-      "The sequence across December 29–31 is not fully resolved."
-    ],
-    "caution": "The displayed December 30 position is approximate; it is not a verified arrival timestamp.",
-    "recordType": "Curated hospital care summary"
-  },
-  {
-    "id": "mclean",
-    "date": "2023-01-01",
-    "displayDate": "January 1–5",
-    "title": "McLean inpatient admission",
-    "short": "January 1–5 · voluntary psychiatric care",
-    "category": "hospital",
-    "clinician": "Alia Goodheart, MD",
-    "institution": "McLean Hospital",
-    "summary": "The provisional admitting formulation was severe major depression without psychotic features; bipolar disorder was considered but not firmly established.",
-    "details": [
-      "Early assessments described numbness or hospital anxiety, improved sleep at a lower quetiapine dose, and denial of delusions, hallucinations, suicidal or homicidal ideation.",
-      "On January 3, Goodheart described anxiety with linear, goal-directed thought and no psychosis.",
-      "The inpatient team did not have immediate access to the complete South Shore or Aster charts.",
-      "Care included nursing contacts and groups addressing symptoms, self-compassion, medications and expressive therapy.",
-      "Quetiapine was tapered through approximately 75, 50 and 25 mg before stopping; diazepam was changed to lorazepam, with trazodone and melatonin for sleep.",
-      "Duloxetine was discussed as a possible later outpatient option and was not started during the admission."
-    ],
-    "medication": "Quetiapine taper; lorazepam; trazodone; melatonin",
-    "caution": "This is a curated admission summary; individual administration times and the full inpatient chart are unavailable.",
-    "recordType": "Curated hospital care summary"
-  },
-  {
-    "id": "discharge",
-    "date": "2023-01-05",
-    "displayDate": "January 5",
-    "title": "McLean discharge",
-    "short": "January 5 · next-day psychiatry follow-up arranged",
-    "category": "hospital",
-    "clinician": "Alia Goodheart, MD",
-    "institution": "McLean Hospital",
-    "summary": "Clancy requested an earlier discharge because of hospital anxiety. Discharge was arranged after a next-day outpatient psychiatry appointment was confirmed.",
-    "details": [
-      "The discharge assessment did not identify an acute safety concern.",
-      "Planning included outpatient follow-up, case-management resources, crisis planning and after-visit information.",
-      "Trazodone and lorazepam were prescribed; melatonin was planned and no further quetiapine was planned."
-    ],
-    "caution": "A discharge assessment describes that point in time.",
-    "recordType": "Curated hospital care summary"
-  },
-  {
-    "id": "rx-jan5",
-    "date": "2023-01-05",
-    "displayDate": "January 5",
-    "title": "Discharge prescriptions",
-    "short": "Trazodone 50 mg ×28 · lorazepam 1 mg ×14",
-    "category": "medication",
-    "clinician": "Alia Goodheart, MD",
-    "institution": "McLean Hospital",
-    "summary": "McLean discharge prescriptions included trazodone 50 mg, quantity 28, and lorazepam 1 mg, quantity 14.",
-    "details": [
-      "The medications were described as short-term or as-needed treatment.",
-      "Melatonin was included in the plan; quetiapine was to stop."
-    ],
-    "medication": "Trazodone 50 mg; lorazepam 1 mg; melatonin planned",
-    "caution": "Home dosing is not established by the discharge prescriptions.",
-    "recordType": "Curated medication summary"
-  },
-  {
-    "id": "jan6",
-    "date": "2023-01-06",
-    "displayDate": "January 6",
-    "title": "Psychiatry follow-up after discharge",
-    "short": "Telehealth · mood remains low and numb",
+    "id": "mar30-pulmonary-consult",
+    "date": "2026-03-30",
+    "displayDate": "Mar 30",
+    "title": "Pulmonology: review the asthma episode",
+    "short": "Trigger history · technique · written action plan",
     "category": "visit",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy reported continuing depression and numbness after the quetiapine taper, with rebound anxiety as lorazepam wore off.",
+    "summary": "Dr. Chen reviews the recent admission and Maya’s asthma history with the consolidated medication record.",
     "details": [
-      "She reported trazodone 100 mg, lorazepam 1 mg and melatonin 5 mg.",
-      "She denied suicidal and homicidal ideation and psychotic symptoms.",
-      "Tufts planned trazodone 150 mg and observation after stopping quetiapine before adding another antidepressant.",
-      "Tufts had a discharge summary but not the complete inpatient chart."
+      "Patient report: No nighttime awakenings in the past week and one rescue use since the PCP follow-up. She has returned to most ordinary activities.",
+      "Review: Viral trigger, prior controller therapy, environmental exposures and the March medication-access issue are discussed.",
+      "Plan recorded: Maintain the current budesonide–formoterol prescription and separate rescue plan during recovery; obtain spirometry and reassess in May.",
+      "Device teaching: Spacer technique reviewed and a patient-specific written asthma action plan is saved to MyChart.",
+      "Coordination: Pulmonary note routed to primary care and the clinical pharmacist."
     ],
-    "medication": "Trazodone 100 mg + lorazepam 1 mg + melatonin 5 mg reported",
-    "caution": "Medication use was patient reported.",
-    "recordType": "Curated encounter summary"
+    "recordType": "Synthetic office encounter",
+    "clinician": "Emery Chen, MD · pulmonology",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "tufts-jan9",
-    "date": "2023-01-09",
-    "displayDate": "January 9",
-    "title": "Psychiatry follow-up: rebound anxiety",
-    "short": "Telehealth · taper approach reviewed",
-    "category": "visit",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy reported rebound anxiety as nighttime lorazepam wore off, with flat mood but some ability to laugh and no recent suicidal thoughts.",
+    "id": "mar31-spirometry",
+    "date": "2026-03-31",
+    "displayDate": "Mar 31",
+    "title": "Spirometry: post-exacerbation baseline",
+    "short": "FEV₁ 78% predicted · bronchodilator response",
+    "category": "lab",
+    "summary": "Initial pulmonary testing provides an objective recovery baseline.",
     "details": [
-      "She denied homicidal ideation; no psychosis was observed.",
-      "Amitriptyline and bupropion were discussed without selecting a new antidepressant that day.",
-      "Lorazepam was replaced with diazepam for a longer-half-life taper."
+      "Pre-bronchodilator: FEV₁ 2.18 L (78% predicted); FVC 3.24 L (94% predicted); FEV₁/FVC 0.67.",
+      "Post-bronchodilator: FEV₁ 2.54 L (91% predicted), increase 0.36 L; testing quality recorded as acceptable.",
+      "Specialist interpretation: Airflow obstruction with bronchodilator responsiveness in the context of the recorded asthma history.",
+      "Result plan: Continue the current recovery regimen; repeat testing is planned for May. These are synthetic measurements."
     ],
-    "caution": "Discussed medication options were not necessarily prescribed or taken.",
-    "recordType": "Curated encounter summary"
+    "recordType": "Synthetic laboratory / diagnostic result",
+    "clinician": "Emery Chen, MD · pulmonology",
+    "institution": "Harborlight Demo Pulmonary Lab"
   },
   {
-    "id": "jan9",
-    "date": "2023-01-09",
-    "displayDate": "January 9",
-    "title": "Lorazepam changed to diazepam",
-    "short": "5 mg ×14 · taper strategy",
-    "category": "medication",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Tufts replaced lorazepam with diazepam to address rebound anxiety and support tapering.",
-    "details": [
-      "Diazepam 5 mg, quantity 14, was filled."
-    ],
-    "medication": "Diazepam 5 mg",
-    "caution": "Dispensing does not establish the subsequent dosing schedule.",
-    "recordType": "Curated medication summary"
-  },
-  {
-    "id": "ketamine",
-    "date": "2023-01-11",
-    "displayDate": "January 11",
-    "title": "MyChart: asks about ketamine",
-    "short": "Low mood and minimal motivation",
+    "id": "apr02-technique-message",
+    "date": "2026-04-02",
+    "displayDate": "Apr 2",
+    "title": "MyChart: inhaler technique follow-through",
+    "short": "Spacer routine · no overnight symptoms",
     "category": "message",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy asked about ketamine while describing very low mood, limited motivation and a desire for faster relief.",
+    "summary": "The pulmonary nurse checks whether device teaching translated into Maya’s home routine.",
     "details": [
-      "Tufts discussed the treatment history typically reviewed before considering ketamine."
+      "Jonah Ellis, RN, on behalf of the pulmonary team: “Were you able to use the spacer steps reviewed at your visit?”",
+      "Maya Bennett, patient: “Yes. Slowing down helped. I have not been waking with coughing, and I keep the two inhalers in separate labeled spots.”",
+      "Emery Chen, MD: “I reviewed your update and the spirometry. We will continue the current plan until the scheduled reassessment.”",
+      "Thread outcome: Technique follow-up completed; no unplanned dose change."
     ],
-    "caution": "The exchange does not establish ketamine prescription or treatment.",
-    "recordType": "Curated care communication"
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Emery Chen, MD · pulmonology",
+    "institution": "Harborlight Demo Health",
+    "medication": "Budesonide–formoterol; albuterol"
   },
   {
-    "id": "traz150",
-    "date": "2023-01-12",
-    "displayDate": "January 12",
-    "title": "Trazodone dose increased",
-    "short": "150 mg ×30",
+    "id": "apr03-allergy-rx",
+    "date": "2026-04-03",
+    "displayDate": "Apr 3",
+    "title": "Prescription: seasonal allergy symptom relief",
+    "short": "Cetirizine as needed · short spring interval",
     "category": "medication",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Tufts prescribed trazodone 150 mg, and a 30-tablet supply was filled.",
+    "summary": "After a brief clinical review, Dr. Ortiz records an as-needed cetirizine order for Maya’s seasonal nasal and eye symptoms.",
     "details": [
-      "The intended dose increased from the previously reported 100 mg."
+      "Patient symptoms in this fictional encounter: Sneezing and itchy eyes outdoors, without recurrent lower-airway symptoms.",
+      "Order: Cetirizine 10 mg orally daily as needed for seasonal allergy symptoms; quantity 30, no refills.",
+      "Dispensing: Demo pharmacy records pickup April 4. Actual intermittent use is later described by Maya; a daily course is not assumed.",
+      "Follow-up: Spring symptoms and ongoing need are reviewed in the May portal thread."
     ],
-    "medication": "Trazodone 150 mg",
-    "caution": "The prescription does not establish the dose taken every night.",
-    "recordType": "Curated medication summary"
+    "recordType": "Synthetic medication record",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health",
+    "medication": "Cetirizine 10 mg as needed"
   },
   {
-    "id": "rx-jan13",
-    "date": "2023-01-13",
-    "displayDate": "January 13",
-    "title": "Diazepam fill",
-    "short": "2 mg ×7 · prescriber unresolved",
-    "category": "medication",
-    "summary": "A seven-tablet supply of diazepam 2 mg is represented in the existing timeline.",
+    "id": "apr06-lab-scheduling",
+    "date": "2026-04-06",
+    "displayDate": "Apr 6",
+    "title": "Telephone: lab visit fitted around work",
+    "short": "Front desk · April 9 slot confirmed",
+    "category": "telephone",
+    "summary": "Scheduling staff coordinate the ordered diabetes and lipid follow-up tests before the PCP appointment.",
     "details": [
-      "Prescriber attribution is unresolved in the curated material."
+      "Maya calls to ask whether a morning draw is available before work.",
+      "Nia Brooks, front desk: Books the April 9 laboratory appointment and confirms the April 10 PCP visit.",
+      "Staff action: Relays the preparation instructions already attached to the clinician’s order; questions about medications are forwarded to the nurse.",
+      "Outcome: The patient confirms both appointments and the laboratory requisition is present."
     ],
-    "medication": "Diazepam 2 mg",
-    "caution": "The fill does not establish ingestion or a complete taper schedule.",
-    "recordType": "Curated medication summary"
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Nia Brooks · front desk / scheduling",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "jan16",
-    "date": "2023-01-16",
-    "displayDate": "January 16",
-    "title": "Psychiatry follow-up: impaired functioning",
-    "short": "Telehealth · very low mood and numbness",
+    "id": "apr09-quarterly-labs",
+    "date": "2026-04-09",
+    "displayDate": "Apr 9",
+    "title": "Quarterly labs: measurable progress",
+    "short": "HbA1c 7.1% · LDL-C 82 mg/dL",
+    "category": "lab",
+    "summary": "Follow-up testing shows improvement from the January baseline after the first three months of care.",
+    "details": [
+      "HbA1c: 7.1%, compared with 8.4% on January 7; fasting glucose: 124 mg/dL.",
+      "Lipid panel: LDL-C 82 mg/dL; HDL-C 49 mg/dL; triglycerides 139 mg/dL.",
+      "Creatinine: 0.77 mg/dL; eGFR: 99 mL/min/1.73 m²; potassium: 4.3 mmol/L; ALT: 22 U/L.",
+      "Context: The A1c interval includes the March illness and brief prednisone course. The result is reviewed with the patient at the April 10 visit."
+    ],
+    "recordType": "Synthetic laboratory / diagnostic result",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "apr10-quarterly-visit",
+    "date": "2026-04-10",
+    "displayDate": "Apr 10",
+    "title": "Quarterly review: progress after a setback",
+    "short": "A1c down 1.3 points · BP 128/80",
     "category": "visit",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy reported very low mood, numbness, difficulty getting out of bed and impairment in basic care and bonding.",
+    "summary": "Dr. Ortiz reviews the improving results alongside the recent hospitalization and Maya’s own goals.",
     "details": [
-      "She described forcing herself to attend to hygiene, eating and infant care.",
-      "She denied suicidal and homicidal ideation and psychotic symptoms.",
-      "Amitriptyline 10 mg was prescribed; diazepam tapering continued."
+      "Vitals: BP 128/80 mmHg; weight 85.8 kg; oxygen saturation 98% on room air.",
+      "Diabetes: HbA1c improved to 7.1%; Maya prefers to consolidate the current routine before discussing any additional therapy. Metformin ER 1,500 mg remains unchanged.",
+      "Cardiovascular review: LDL-C 82 mg/dL and stable BP on the current atorvastatin and losartan prescriptions.",
+      "Asthma: No urgent visits since discharge; pulmonary follow-up and May spirometry remain scheduled.",
+      "Next steps: Continue patient-specific goals, maintain the reconciled medication list and review repeat labs with the June care-plan visit."
     ],
-    "caution": "Reported difficulty functioning can coexist with completing necessary daily activities.",
-    "recordType": "Curated encounter summary"
+    "recordType": "Synthetic office encounter",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "rx-jan16",
-    "date": "2023-01-16",
-    "displayDate": "January 16",
-    "title": "Amitriptyline started in treatment plan",
-    "short": "10 mg ×30 · diazepam taper continues",
-    "category": "medication",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Tufts prescribed amitriptyline 10 mg and continued the diazepam taper; both medications were dispensed.",
-    "details": [
-      "Amitriptyline 10 mg, quantity 30, was filled.",
-      "Diazepam 2 mg was dispensed; its original quantity is unresolved."
-    ],
-    "medication": "Amitriptyline 10 mg; diazepam 2 mg",
-    "caution": "These fills do not establish doses taken.",
-    "recordType": "Curated medication summary"
-  },
-  {
-    "id": "rx-jan19",
-    "date": "2023-01-19",
-    "displayDate": "January 19",
-    "title": "Diazepam refill",
-    "short": "2 mg ×14 · prescriber unresolved",
-    "category": "medication",
-    "summary": "A 14-tablet supply of diazepam 2 mg is represented in the existing timeline.",
-    "details": [
-      "Prescriber attribution remains unresolved."
-    ],
-    "medication": "Diazepam 2 mg",
-    "caution": "The refill does not establish daily dosing or adherence.",
-    "recordType": "Curated medication summary"
-  },
-  {
-    "id": "jan23",
-    "date": "2023-01-23",
-    "displayDate": "January 23",
-    "title": "Psychiatry follow-up: persistent depression",
-    "short": "Telehealth · sleep adequate; morning anxiety",
+    "id": "apr13-nutrition-followup",
+    "date": "2026-04-13",
+    "displayDate": "Apr 13",
+    "title": "Nutrition: rebuild activity after the hospital stay",
+    "short": "Flexible goals · confidence returning",
     "category": "visit",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Clancy reported starting amitriptyline 10 mg without apparent side effects and reducing diazepam to 2 mg, with more morning anxiety.",
+    "summary": "The dietitian adapts the activity goal to Maya’s recovery and work routine.",
     "details": [
-      "She remained depressed, flat and poorly motivated, while describing sleep as adequate.",
-      "She denied suicidal and homicidal ideation.",
-      "Tufts described appropriate appearance, speech, thought process, cognition and psychomotor activity, with no mania or psychosis.",
-      "Amitriptyline was increased to 20 mg and the diazepam taper was slowed."
+      "Maya reports returning to her usual walking route in shorter segments and preparing breakfast consistently.",
+      "Visit focus: Avoiding an all-or-nothing response to the March illness; planning meals around two longer shifts each week.",
+      "Patient-selected next goal: Bring lunch from home on three workdays and resume comfortable walks as recovery permits under her clinician’s plan.",
+      "Coordination: No medication adjustment is made in the nutrition visit; the PCP receives the goal update."
     ],
-    "caution": "The ordered increase does not establish that a 20 mg dose was taken.",
-    "recordType": "Curated encounter summary"
+    "recordType": "Synthetic office encounter",
+    "clinician": "Tess Rowan, RDN · diabetes education",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "rx-jan23",
-    "date": "2023-01-23",
-    "displayDate": "January 23",
-    "title": "Amitriptyline dose increase ordered",
-    "short": "20 mg planned · diazepam taper slowed",
+    "id": "apr15-refill-message",
+    "date": "2026-04-15",
+    "displayDate": "Apr 15",
+    "title": "MyChart: metformin refill before the weekend",
+    "short": "Correct dose confirmed · pharmacy task opened",
+    "category": "message",
+    "summary": "Maya requests a refill of her reconciled metformin prescription and confirms the active tablet count.",
+    "details": [
+      "Maya Bennett, patient: “I have less than two weeks left of metformin. The current label says three 500 mg ER tablets at dinner. Can the refill use that same label?”",
+      "Priya Soren, PharmD: “I checked the active list and your April visit. The current prescription is 1,500 mg with the evening meal. I sent the refill request to Dr. Ortiz and removed the older directions from the pharmacy queue.”",
+      "Maya Bennett: “Thank you. I can pick it up Friday with my inhaler refill.”",
+      "Thread outcome: Refill request routed for prescriber authorization; dispensing is recorded in the next entry."
+    ],
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Health",
+    "medication": "Metformin ER 1,500 mg"
+  },
+  {
+    "id": "apr16-metformin-refill",
+    "date": "2026-04-16",
+    "displayDate": "Apr 16",
+    "title": "Prescription refill: metformin ER",
+    "short": "Current 1,500 mg dose · supply synchronized",
     "category": "medication",
-    "clinician": "Jennifer Tufts, MD",
-    "institution": "Aster Mental Health",
-    "summary": "Tufts increased the prescribed amitriptyline dose from 10 to 20 mg and slowed diazepam tapering.",
+    "summary": "Dr. Ortiz authorizes the refill with the current directions and the pharmacy aligns the pickup window.",
     "details": [
-      "Clancy reported starting 10 mg without apparent side effects.",
-      "A diazepam 2 mg fill is represented with an uncertain quantity."
+      "Order: Metformin ER 500 mg, three tablets with the evening meal; quantity 90, two refills.",
+      "Dispensing history reviewed: Metformin ER 90-tablet continuation fill March 17 and a further 90 tablets April 17; the April pickup includes the regularly scheduled budesonide–formoterol refill.",
+      "Reconciliation: The dose remains 1,500 mg. This is a continuation refill, not a new titration.",
+      "Access outcome: Maya confirms pickup; no interruption in supply is reported."
     ],
-    "medication": "Amitriptyline 20 mg prescribed; diazepam 2 mg",
-    "caution": "Whether the 20 mg amitriptyline dose was taken is unknown.",
-    "recordType": "Curated medication summary"
+    "recordType": "Synthetic medication record",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health",
+    "medication": "Metformin ER 1,500 mg; budesonide–formoterol refill"
   },
   {
-    "id": "jan26",
-    "date": "2023-01-26",
-    "displayDate": "January 26",
-    "title": "Hospital psychiatry consultation",
-    "short": "Communication and safety assessment",
-    "category": "hospital",
-    "clinician": "Jhilam Biswas, MD",
-    "institution": "Brigham and Women’s Hospital",
-    "summary": "While intubated, Clancy communicated through written responses during a psychiatric assessment.",
+    "id": "apr17-referral-paperwork",
+    "date": "2026-04-17",
+    "displayDate": "Apr 17",
+    "title": "Telephone: close an eye-referral paperwork loop",
+    "short": "Front desk · completed exam report re-sent",
+    "category": "telephone",
+    "summary": "Maya asks about a portal referral status that still appears open despite her completed eye examination.",
     "details": [
-      "The assessment described linear communication and no psychosis during the encounter.",
-      "The consultation team recommended suicide precautions and trauma-informed care while evaluating safety before spine surgery."
+      "Maya Bennett, patient: “I went to the January eye visit, but the reminder says the referral is still waiting.”",
+      "Nia Brooks, referral coordinator: Confirms the January 26 report is in the chart, updates the referral status and re-sends the completion notice to the demo plan.",
+      "Staff action: Removes the duplicate scheduling reminder; no second examination is booked.",
+      "Outcome: Patient receives confirmation that the baseline eye screening is complete and the planned annual follow-up remains."
     ],
-    "caution": "The 20–30 minute assessment describes that encounter only.",
-    "recordType": "Curated hospital care summary"
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Nia Brooks · front desk / scheduling",
+    "institution": "Harborlight Demo Health"
   },
   {
-    "id": "delirium",
-    "date": "2023-01-29",
-    "displayDate": "January 29–30",
-    "title": "Postoperative delirium follow-up",
-    "short": "January 29–30 · confusion and visual hallucinations resolve",
-    "category": "hospital",
-    "clinician": "Sejal Shah, MD",
-    "institution": "Brigham and Women’s Hospital",
-    "summary": "Shah identified postoperative delirium with confusion and visual hallucinations in the setting of anesthesia, oxygen desaturation, tachycardia and acute medical illness.",
+    "id": "apr21-pulmonary-results-message",
+    "date": "2026-04-21",
+    "displayDate": "Apr 21",
+    "title": "MyChart: understanding the lung test",
+    "short": "Specialist explains recovery baseline",
+    "category": "message",
+    "summary": "Maya asks what the March spirometry numbers mean for the upcoming follow-up.",
     "details": [
-      "By January 30 the delirium was described as resolved.",
-      "The follow-up described calm, cooperative, organized and goal-directed behavior, fair insight and judgment, and denial of suicidal or homicidal ideation, ongoing hallucinations and delusions."
+      "Maya Bennett, patient: “I can see two FEV1 numbers on the test. Does the higher one mean I can stop the new inhaler?”",
+      "Emery Chen, MD: “The second number was measured after a bronchodilator during the test. It shows a response at that visit. I recommend keeping your current recorded plan until we reassess symptoms and repeat the test in May.”",
+      "Maya Bennett: “Understood. I will keep the May appointments and bring both inhalers.”",
+      "Thread outcome: Test context explained for this fictional patient; no controller step-down is ordered."
     ],
-    "caution": "These findings describe the postoperative treatment period.",
-    "recordType": "Curated hospital care summary"
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Emery Chen, MD · pulmonology",
+    "institution": "Harborlight Demo Health",
+    "medication": "Budesonide–formoterol"
   },
   {
-    "id": "feb",
-    "date": "2023-02-20",
-    "displayDate": "February 19–21",
-    "title": "Rehabilitation-focused follow-up",
-    "short": "February 19–21 · orientation and goals reviewed",
+    "id": "apr23-pharmacist",
+    "date": "2026-04-23",
+    "displayDate": "Apr 23",
+    "title": "Pharmacist: simplify ongoing refills",
+    "short": "One pickup calendar · no duplicate therapies",
     "category": "visit",
-    "clinician": "Sejal Shah, MD",
-    "summary": "Shah described orientation and future-oriented thinking about rehabilitation, alongside low mood related to paralysis.",
+    "summary": "The pharmacist checks maintenance therapy and closes the earlier refill-synchronization task.",
     "details": [
-      "Clancy denied suicidal and homicidal ideation and auditory or visual hallucinations."
+      "Patient report: No missed doses in the past week, no recurrent metformin stomach upset, no dizziness and no statin-associated symptoms reported.",
+      "Pharmacy review: Metformin, losartan and atorvastatin refill dates are aligned where the demo coverage allows; inhaler remains on its own 30-day device schedule.",
+      "Inhaler review: Combination controller continues; old budesonide-only order remains discontinued. Prednisone and inpatient drugs are marked completed or stopped.",
+      "Patient preference: Maya keeps a calendar reminder and requests 90-day oral supplies once the current doses have remained stable."
     ],
-    "caution": "The date represents an assessment range rather than a single verified appointment.",
-    "recordType": "Curated encounter summary"
+    "recordType": "Synthetic office encounter",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "apr27-goals-message",
+    "date": "2026-04-27",
+    "displayDate": "Apr 27",
+    "title": "MyChart: a patient-defined milestone",
+    "short": "Back to regular walks · care team responds",
+    "category": "message",
+    "summary": "Maya shares a functional milestone that complements the laboratory measures.",
+    "details": [
+      "Maya Bennett, patient: “I walked the whole community-garden loop after work twice this week. I used to stop halfway because I felt tired.”",
+      "Tess Rowan, RDN: “I added that to your goal record. Which part of your routine made the biggest difference for you?”",
+      "Maya Bennett: “Having breakfast ready and knowing which inhaler I am using. The medicine list finally makes sense.”",
+      "Tess Rowan, RDN: “We will build the next goal around the routines that are working for you.”",
+      "Thread outcome: Functional progress recorded as the patient’s experience, not as a measured exercise test."
+    ],
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Tess Rowan, RDN · diabetes education",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "may01-refill-supply-call",
+    "date": "2026-05-01",
+    "displayDate": "May 1",
+    "title": "Telephone: monthly medication supply check",
+    "short": "Pharmacy team · early refill planning",
+    "category": "telephone",
+    "summary": "The pharmacy team checks remaining supply before the next synchronized refill window.",
+    "details": [
+      "Priya Soren, PharmD: Confirms Maya has enough metformin and inhaler supply and asks whether any bottle labels are unclear.",
+      "Patient report: Losartan and atorvastatin are approaching the agreed refill date; no access issue or unintended discontinuation is reported.",
+      "Workflow: Renewal requests are sent to Dr. Ortiz with the current doses and recent laboratory results.",
+      "Outcome: Patient chooses the same demo pharmacy and a May 5 pickup window."
+    ],
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "may05-maintenance-refills",
+    "date": "2026-05-05",
+    "displayDate": "May 5",
+    "title": "Prescriptions renewed: BP and cholesterol therapy",
+    "short": "Losartan 50 mg · atorvastatin 20 mg",
+    "category": "medication",
+    "summary": "Stable oral therapy is renewed after review of the April visit and laboratory results.",
+    "details": [
+      "Orders: Losartan 50 mg daily, quantity 30 with two refills; atorvastatin 20 mg nightly, quantity 30 with two refills.",
+      "Dispensing: Both 30-day supplies recorded May 5 at Harborlight Demo Pharmacy.",
+      "Evidence: Renewal confirms the prescribed plan. The pharmacist separately asks Maya about her actual use at follow-up.",
+      "Next task: Assess eligibility for 90-day supplies before planned summer travel."
+    ],
+    "recordType": "Synthetic medication record",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health",
+    "medication": "Losartan 50 mg; atorvastatin 20 mg"
+  },
+  {
+    "id": "may07-bp-check",
+    "date": "2026-05-07",
+    "displayDate": "May 7",
+    "title": "Nurse visit: blood-pressure trend holds",
+    "short": "Office BP 126/78 · home log agrees",
+    "category": "visit",
+    "summary": "A brief nurse visit checks the reliability and durability of the improved blood-pressure readings.",
+    "details": [
+      "Office BP: 126/78 mmHg; home seven-day average: 127/79 mmHg.",
+      "Patient report: No dizziness, falls or swelling; current losartan label matches the chart.",
+      "Workflow: Nurse routes the measurements and symptom review to Dr. Ortiz, who documents continuation of the existing prescription.",
+      "Follow-up: June care-plan review remains scheduled."
+    ],
+    "recordType": "Synthetic office encounter",
+    "clinician": "Jonah Ellis, RN · clinical triage",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "may11-travel-message",
+    "date": "2026-05-11",
+    "displayDate": "May 11",
+    "title": "MyChart: planning medicines for summer travel",
+    "short": "Supply question · no urgent refill gap",
+    "category": "message",
+    "summary": "Maya raises a practical medication-access question early enough for the pharmacy team to resolve it.",
+    "details": [
+      "Maya Bennett, patient: “I am visiting family in July. Could we sort out longer supplies before then so I do not have three separate pickups?”",
+      "Priya Soren, PharmD: “I will review the demo plan’s 90-day options and your current refill dates. Your June appointment is a good point to confirm the plan before travel.”",
+      "Maya Bennett: “That works. I have enough medicine for this month.”",
+      "Thread outcome: A supply-planning task is opened; no medication change or unverified early fill is recorded."
+    ],
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "may12-pharmacy-coverage",
+    "date": "2026-05-12",
+    "displayDate": "May 12",
+    "title": "Pharmacy review: longer-supply options",
+    "short": "Coverage checked · June conversion planned",
+    "category": "medication",
+    "summary": "The pharmacist records coverage findings and a future supply plan without treating it as a completed fill.",
+    "details": [
+      "Demo plan review: Ninety-day supplies are covered for stable metformin ER, losartan and atorvastatin prescriptions after the next eligible refill date.",
+      "Controller inhaler: Existing authorization remains active; the device continues on a monthly dispensing schedule.",
+      "Planned action: Ask the prescriber to convert the three oral maintenance prescriptions in June after the medication review.",
+      "Status: Planned supply change only. The current drug doses and actual dispensing dates remain unchanged."
+    ],
+    "recordType": "Synthetic medication record",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Health",
+    "medication": "Metformin ER; losartan; atorvastatin · 90-day supply planned"
+  },
+  {
+    "id": "may15-pcp-check",
+    "date": "2026-05-15",
+    "displayDate": "May 15",
+    "title": "Primary care: maintain momentum",
+    "short": "Stable diabetes and BP plan · no acute concerns",
+    "category": "visit",
+    "summary": "A brief follow-up addresses Maya’s questions before the pulmonary reassessment and June review.",
+    "details": [
+      "Vitals: BP 128/78 mmHg; weight 85.2 kg. Maya reports steady energy and no new medication side effects.",
+      "Patient priorities: Keep the routine simple, travel without refill stress and understand when each follow-up is due.",
+      "Care plan: Continue current oral therapy, complete May pulmonary testing and obtain the already ordered June A1c and metabolic/lipid panels.",
+      "Coordination: PCP acknowledges the pharmacy’s 90-day supply plan and records June as the conversion point if the regimen remains stable."
+    ],
+    "recordType": "Synthetic office encounter",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "may19-repeat-spirometry",
+    "date": "2026-05-19",
+    "displayDate": "May 19",
+    "title": "Repeat spirometry: recovery documented",
+    "short": "FEV₁ 93% predicted · ratio 0.78",
+    "category": "lab",
+    "summary": "Repeat pulmonary testing gives the specialist an objective comparison with the March study.",
+    "details": [
+      "Pre-bronchodilator: FEV₁ 2.60 L (93% predicted); FVC 3.33 L (96% predicted); FEV₁/FVC 0.78.",
+      "Comparison: FEV₁ was 2.18 L before bronchodilator on March 31. The repeat study is obtained while Maya remains on her maintenance regimen.",
+      "Test quality: Acceptable and reproducible maneuvers documented.",
+      "Result routing: Final report sent to Dr. Chen for the May 20 visit; the numbers alone do not trigger an automatic medication change."
+    ],
+    "recordType": "Synthetic laboratory / diagnostic result",
+    "clinician": "Emery Chen, MD · pulmonology",
+    "institution": "Harborlight Demo Pulmonary Lab"
+  },
+  {
+    "id": "may20-pulmonary-followup",
+    "date": "2026-05-20",
+    "displayDate": "May 20",
+    "title": "Pulmonology: stable recovery and shared next steps",
+    "short": "No nighttime symptoms · controller continued",
+    "category": "visit",
+    "summary": "Dr. Chen reviews improved spirometry, symptom control and the patient’s goals after the hospitalization.",
+    "details": [
+      "Patient report: No nighttime awakenings in four weeks, rescue inhaler used once after a dusty work task, and no urgent care since March.",
+      "Review: May FEV₁ 93% predicted compared with the March recovery baseline; spacer technique demonstrated correctly.",
+      "Patient-specific decision: Continue the current budesonide–formoterol maintenance prescription through the demonstration period. A future step-down discussion is deferred until a longer stable interval.",
+      "Coordination: Updated plan sent to primary care and pharmacy; the March access issue remains resolved."
+    ],
+    "recordType": "Synthetic office encounter",
+    "clinician": "Emery Chen, MD · pulmonology",
+    "institution": "Harborlight Demo Health",
+    "medication": "Budesonide–formoterol; albuterol"
+  },
+  {
+    "id": "may22-june-reschedule",
+    "date": "2026-05-22",
+    "displayDate": "May 22",
+    "title": "Telephone: June review moved and coordinated",
+    "short": "Front desk · labs stay ahead of the visit",
+    "category": "telephone",
+    "summary": "The front desk reschedules Maya’s June review while preserving the order of testing and clinician follow-up.",
+    "details": [
+      "Maya asks to move the original June 25 visit because of a workplace event.",
+      "Nia Brooks, scheduling: Offers June 26 at 8:20 AM; keeps laboratory testing on June 24 and confirms the pharmacy visit remains June 8.",
+      "Staff action: Updates reminders and notes that the June visit includes the six-month care-plan review.",
+      "Outcome: Patient accepts; no duplicate appointments remain."
+    ],
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Nia Brooks · front desk / scheduling",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "may27-allergy-message",
+    "date": "2026-05-27",
+    "displayDate": "May 27",
+    "title": "MyChart: spring allergy symptoms have eased",
+    "short": "Intermittent cetirizine use documented",
+    "category": "message",
+    "summary": "Maya updates the care team about the as-needed allergy medicine added in April.",
+    "details": [
+      "Maya Bennett, patient: “I used cetirizine on about ten days this spring, mostly after gardening. I have not needed it for over a week.”",
+      "Lena Ortiz, MD: “I noted the intermittent use and improvement. We will mark the seasonal course inactive for now and review again if symptoms return.”",
+      "Maya Bennett: “I still have tablets, so I do not need a refill.”",
+      "Thread outcome: Seasonal cetirizine use is marked inactive May 27; no refill or ongoing daily exposure is assumed."
+    ],
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health",
+    "medication": "Cetirizine 10 mg as needed"
+  },
+  {
+    "id": "may29-controller-renewal",
+    "date": "2026-05-29",
+    "displayDate": "May 29",
+    "title": "Prescription renewal: maintenance inhaler",
+    "short": "Pulmonary plan reviewed · coverage remains active",
+    "category": "medication",
+    "summary": "The pulmonary team renews the controller prescription following the stable May assessment.",
+    "details": [
+      "Order: Budesonide–formoterol 80/4.5 mcg, two puffs twice daily; one 120-actuation inhaler with two refills.",
+      "Renewal status: Sent to the demo pharmacy for the next eligible monthly fill; it is not recorded as an extra early dispensed inhaler.",
+      "Access: Existing prior authorization remains valid. Pharmacy confirms no new authorization task is required.",
+      "Continuity: Albuterol remains a separate rescue prescription; budesonide-only therapy remains discontinued."
+    ],
+    "recordType": "Synthetic medication record",
+    "clinician": "Emery Chen, MD · pulmonology",
+    "institution": "Harborlight Demo Health",
+    "medication": "Budesonide–formoterol 80/4.5 mcg"
+  },
+  {
+    "id": "jun02-insurance-call",
+    "date": "2026-06-02",
+    "displayDate": "Jun 2",
+    "title": "Telephone: 90-day supply eligibility confirmed",
+    "short": "Pharmacy and demo payer · final coverage check",
+    "category": "telephone",
+    "summary": "The pharmacist confirms the timing and coverage details for the planned longer oral medication supplies.",
+    "details": [
+      "Pharmacy action: Confirms the routine May 17 metformin ER fill (90 tablets) and obtains approval for the synchronized June 8 conversion to 90-day oral supplies.",
+      "Patient discussion: Maya confirms the current doses and her preference for 90-day supplies. The May 5 losartan and atorvastatin supplies reach June 3; four-tablet bridge supplies of each are dispensed June 2 under the existing prescriptions to cover June 4–7.",
+      "Boundary: The demo plan authorizes the early metformin supply conversion for synchronization. No dose or substitution is selected by the payer representative; the pharmacist routes renewal details to Dr. Ortiz.",
+      "Outcome: Supply conversion prepared for the June 8 medication-review visit."
+    ],
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "jun04-lab-reminder-message",
+    "date": "2026-06-04",
+    "displayDate": "Jun 4",
+    "title": "MyChart: a clear plan for June appointments",
+    "short": "Labs, pharmacy and care review in one thread",
+    "category": "message",
+    "summary": "Scheduling staff consolidate the upcoming appointments so Maya can plan around work.",
+    "details": [
+      "Nia Brooks, front desk: “Your upcoming appointments are pharmacy review June 8, laboratory visit June 24, and Dr. Ortiz June 26 at 8:20 AM.”",
+      "Maya Bennett, patient: “Those dates work. Can the doctor see the pulmonary note and the pharmacy list before we meet?”",
+      "Nia Brooks, front desk: “Both are in your chart. I added your request to the visit agenda and routed clinical questions to the care team.”",
+      "Thread outcome: Appointments confirmed; the visit agenda includes results, asthma follow-up and travel supply."
+    ],
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Nia Brooks · front desk / scheduling",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "jun08-pharmacy-review",
+    "date": "2026-06-08",
+    "displayDate": "Jun 8",
+    "title": "Pharmacist: stable regimen, fewer pickups",
+    "short": "90-day oral supplies dispensed · teach-back complete",
+    "category": "visit",
+    "summary": "The medication review confirms the current regimen and completes the planned supply conversion.",
+    "details": [
+      "Patient-reported use: Metformin ER 1,500 mg nightly, losartan 50 mg daily, atorvastatin 20 mg nightly, budesonide–formoterol maintenance and infrequent as-needed albuterol.",
+      "Prescriber-approved orders and dispensing: Metformin ER 500 mg ×270 tablets, losartan 50 mg ×90 and atorvastatin 20 mg ×90 are dispensed June 8 as 90-day supplies with unchanged directions.",
+      "Inactive therapies verified: Budesonide-only controller discontinued; prednisone course completed; inpatient insulin and nebulizer treatments stopped; seasonal cetirizine inactive.",
+      "Teach-back: Maya explains her morning/evening routine and distinguishes maintenance from rescue inhalers.",
+      "Outcome: Supply planning task closed before July travel. The May 17 controller continuation fill is confirmed; the next eligible monthly fill is scheduled for June 16."
+    ],
+    "recordType": "Synthetic office encounter",
+    "clinician": "Priya Soren, PharmD · clinical pharmacist",
+    "institution": "Harborlight Demo Health",
+    "medication": "Metformin ER 1,500 mg; losartan 50 mg; atorvastatin 20 mg"
+  },
+  {
+    "id": "jun12-goals-message",
+    "date": "2026-06-12",
+    "displayDate": "Jun 12",
+    "title": "MyChart: Maya sets the review agenda",
+    "short": "Energy, walking and a simpler care routine",
+    "category": "message",
+    "summary": "Maya identifies the outcomes that matter to her before the final care-plan review.",
+    "details": [
+      "Maya Bennett, patient: “For our June visit, I want to check whether the numbers match how much better I feel. I am less tired, walking regularly, and spending less time sorting out refills.”",
+      "Lena Ortiz, MD: “I added those goals to our agenda. We will review your June results along with your blood-pressure log and asthma follow-up.”",
+      "Maya Bennett: “I also want a clear list of which appointments come next.”",
+      "Thread outcome: Patient priorities appear in the June 26 care-plan note."
+    ],
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "jun16-confirmation-call",
+    "date": "2026-06-16",
+    "displayDate": "Jun 16",
+    "title": "Telephone: final review logistics confirmed",
+    "short": "Front desk · no outstanding scheduling barrier",
+    "category": "telephone",
+    "summary": "The front desk confirms the upcoming laboratory and care-review visits and resolves a timing question.",
+    "details": [
+      "Maya asks how much time to allow between the laboratory draw and her work shift.",
+      "Nia Brooks, scheduling: Reviews the booked slot, confirms the requisitions are present and relays the lab’s standard arrival instructions.",
+      "Staff action: Confirms the June 26 visit and notes that Maya will bring her home BP log and current inhalers.",
+      "Outcome: No transportation, portal-access or scheduling barrier remains open."
+    ],
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Nia Brooks · front desk / scheduling",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "jun18-nutrition-review",
+    "date": "2026-06-18",
+    "displayDate": "Jun 18",
+    "title": "Nutrition review: habits that lasted",
+    "short": "Patient goals sustained across six months",
+    "category": "visit",
+    "summary": "The dietitian reviews the routines Maya chose and prepares a concise handoff for the PCP.",
+    "details": [
+      "Patient report: Breakfast on most workdays, lunch prepared at home three days weekly and regular comfortable walking after work.",
+      "Perspective: Maya describes the March admission as a disruption she recovered from, rather than a reason to abandon the plan.",
+      "Next goal: Maintain routines during July travel and arrange a nutrition follow-up only if she needs additional support.",
+      "Handoff: Goal progress and remaining questions are routed to Dr. Ortiz for the June 26 review."
+    ],
+    "recordType": "Synthetic office encounter",
+    "clinician": "Tess Rowan, RDN · diabetes education",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "jun22-previsit-message",
+    "date": "2026-06-22",
+    "displayDate": "Jun 22",
+    "title": "MyChart: pre-visit check-in completed",
+    "short": "Medication list and home BP log submitted",
+    "category": "message",
+    "summary": "Maya completes the final pre-visit questionnaire and confirms the reconciled medication list.",
+    "details": [
+      "Maya Bennett, patient: “The active medicine list matches my bottles. My home BP average for the last week is 126/78. No new concerns to add.”",
+      "Jonah Ellis, RN: “I entered the readings and reviewed the medication list. Your lab appointment is June 24 and the care-plan review is June 26.”",
+      "Maya Bennett: “I will bring the inhalers and my list of questions about next appointments.”",
+      "Thread outcome: Pre-visit review complete; the care team has the patient’s current report before reviewing new labs."
+    ],
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Jonah Ellis, RN · clinical triage",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "jun24-final-labs",
+    "date": "2026-06-24",
+    "displayDate": "Jun 24",
+    "title": "Six-month labs: sustained improvement",
+    "short": "HbA1c 6.6% · LDL-C 76 mg/dL",
+    "category": "lab",
+    "summary": "The final synthetic laboratory panel completes the six-month trajectory.",
+    "details": [
+      "HbA1c: 6.6%, compared with 7.1% in April and 8.4% in January; fasting glucose: 116 mg/dL.",
+      "Lipid panel: LDL-C 76 mg/dL; HDL-C 51 mg/dL; triglycerides 128 mg/dL.",
+      "Creatinine: 0.79 mg/dL; eGFR: 96 mL/min/1.73 m²; potassium: 4.2 mmol/L; ALT: 21 U/L.",
+      "Result workflow: Final results released to MyChart and reviewed by Dr. Ortiz before the June 26 visit."
+    ],
+    "recordType": "Synthetic laboratory / diagnostic result",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "jun25-results-call",
+    "date": "2026-06-25",
+    "displayDate": "Jun 25",
+    "title": "Telephone: results received before the review",
+    "short": "RN callback · questions added to the agenda",
+    "category": "telephone",
+    "summary": "The nurse confirms Maya can view the new results and records her questions for the clinician.",
+    "details": [
+      "Jonah Ellis, RN: Confirms that the laboratory panel is finalized and that Dr. Ortiz has reviewed it.",
+      "Maya asks whether improved A1c means the medication plan will change and when the next eye examination is due.",
+      "RN action: Adds both questions to the visit agenda; no medication discontinuation is proposed during the call.",
+      "Outcome: June 26 care-plan review confirmed."
+    ],
+    "recordType": "Synthetic telephone encounter",
+    "clinician": "Jonah Ellis, RN · clinical triage",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "jun26-care-plan",
+    "date": "2026-06-26",
+    "displayDate": "Jun 26",
+    "title": "Six-month review: one connected care plan",
+    "short": "A1c 6.6% · BP 126/78 · asthma stable",
+    "category": "visit",
+    "summary": "Maya and Dr. Ortiz review six months of care, sustained progress and the next follow-up responsibilities.",
+    "details": [
+      "Current findings: BP 126/78 mmHg; weight 84.8 kg; oxygen saturation 98% on room air. HbA1c 6.6% and LDL-C 76 mg/dL are reviewed together.",
+      "Diabetes / BP / lipids: Continue the current metformin ER 1,500 mg, losartan 50 mg and atorvastatin 20 mg prescriptions. Improved results are discussed as part of an ongoing plan, not a reason to automatically stop therapy.",
+      "Asthma: No further urgent care after the March admission; May lung testing and the pulmonary plan reviewed. Budesonide–formoterol maintenance and separate albuterol rescue prescription remain active.",
+      "Patient goals: Energy and walking have improved by Maya’s report; refill burden is lower after supply synchronization. She demonstrates an accurate understanding of the medication list.",
+      "Next steps recorded: Primary-care and A1c review in three months; pulmonary reassessment per the specialist’s plan; routine retinal examination due January 2027. Future appointments are plans beyond this demo window, not completed events.",
+      "Closed loops: Controller authorization resolved; routine inhaler fills April 17, May 17 and June 16 verified; discharge reconciliation completed; eye referral completed; oral prescriptions synchronized with the June 4–7 bridge accounted for; no outstanding scheduling barrier reported."
+    ],
+    "recordType": "Synthetic office encounter",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health"
+  },
+  {
+    "id": "jun26-visit-summary",
+    "date": "2026-06-26",
+    "displayDate": "Jun 26",
+    "title": "MyChart: the next chapter is clear",
+    "short": "Patient summary · ownership and follow-up confirmed",
+    "category": "message",
+    "summary": "The final portal exchange leaves Maya with a concise, understandable care plan and a place to ask questions.",
+    "details": [
+      "Lena Ortiz, MD: “Today we reviewed your progress and kept the current medication plan. Your visit summary includes the active list, next laboratory review and which team handles each follow-up.”",
+      "Maya Bennett, patient: “I can find everything now. The inhaler issue is solved, the prescriptions are lined up, and I know which appointments come next.”",
+      "Priya Soren, PharmD: “Your oral supplies were dispensed June 8, and the monthly inhaler reminder remains active. The old controller and short hospital treatments are marked inactive.”",
+      "Nia Brooks, front desk: “The next primary-care request is in the scheduling queue. We will send available appointment options through MyChart.”",
+      "Thread outcome: Six-month demonstration complete; future scheduling is pending, not represented as a completed encounter."
+    ],
+    "recordType": "Synthetic MyChart message thread",
+    "clinician": "Lena Ortiz, MD · primary care",
+    "institution": "Harborlight Demo Health"
   }
 ];
 
 export const medications: Medication[] = [
   {
-    "name": "Zoloft",
-    "generic": "sertraline",
-    "color": "#9c6ae4",
-    "className": "SSRI",
-    "summary": "Prescribed in September, started later, then discontinued after reported worsening sleep and anxiety.",
+    "name": "Metformin ER",
+    "generic": "metformin hydrochloride ER",
+    "color": "#8e78d7",
+    "className": "Biguanide · diabetes",
+    "summary": "Started after the January diabetes diagnosis, gradually titrated, briefly held during acute hospital care and resumed at 1,500 mg. June dispensing converted to a 90-day supply.",
     "segments": [
       {
-        "start": "2022-09-15",
-        "end": "2022-09-22",
-        "label": "25 mg",
+        "start": "2026-01-09",
+        "label": "500 mg nightly",
         "status": "prescribed",
-        "note": "Planned first week of treatment. Clancy subsequently reported that she had not started sertraline during this period."
+        "note": "January 9 order; first 30-tablet fill January 12. Maya reports starting January 12. An order interval does not establish daily administration.",
+        "end": "2026-01-15"
       },
       {
-        "start": "2022-09-22",
-        "end": "2022-09-29",
-        "label": "50 mg",
+        "start": "2026-01-16",
+        "label": "1,000 mg nightly",
+        "status": "prescribed",
+        "note": "Dose increased after tolerability review. Two 500 mg ER tablets; updated label and supply recorded January 19.",
+        "end": "2026-02-12"
+      },
+      {
+        "start": "2026-02-13",
+        "label": "1,500 mg nightly",
+        "status": "prescribed",
+        "note": "Three 500 mg ER tablets with the evening meal. Revised supply dispensed February 13; use reported February 18.",
+        "end": "2026-03-11"
+      },
+      {
+        "start": "2026-03-12",
+        "label": "Held during admission",
         "status": "planned",
-        "note": "Planned second step of the September prescription; use during this interval was not established."
+        "note": "Hospital plan temporarily holds metformin during acute illness. This span explicitly represents no planned metformin dosing; temporary correction insulin is recorded separately.",
+        "end": "2026-03-13"
       },
       {
-        "start": "2022-10-20",
-        "label": "25 → 50 mg reported",
+        "start": "2026-03-14",
+        "label": "1,500 mg resumed",
+        "status": "prescribed",
+        "note": "Discharge plan resumes the established dose March 14. Ninety-tablet continuation fills recorded March 17, April 17 and May 17; 270 tablets dispensed June 8 for 90 days after the demo plan approves early synchronization. Display ends at the demo boundary, not a stop order.",
+        "end": "2026-06-26"
+      },
+      {
+        "start": "2026-06-08",
+        "label": "Current use confirmed",
         "status": "reported",
-        "note": "At the October 20 visit, Clancy reported a later start at 25 mg and increase to 50 mg before stopping. Exact start dates, duration and adherence are uncertain."
+        "note": "At the June 8 bottle review, Maya reports taking 1,500 mg nightly without current stomach upset. This is a patient report, not a continuous administration record."
       }
     ]
   },
   {
-    "name": "Ativan",
-    "generic": "lorazepam",
-    "color": "#dc7796",
-    "className": "Benzodiazepine",
-    "summary": "Short-term anxiety and sleep treatment with outpatient taper plans and later inpatient use.",
+    "name": "Losartan",
+    "generic": "losartan potassium",
+    "color": "#c6a054",
+    "className": "ARB · blood pressure",
+    "summary": "Started at 25 mg and increased to 50 mg after home BP review. Kidney function and potassium remained stable in the synthetic follow-up results.",
     "segments": [
       {
-        "start": "2022-10-21",
-        "end": "2022-10-26",
-        "label": "0.5 mg",
+        "start": "2026-01-09",
+        "label": "25 mg daily",
         "status": "prescribed",
-        "note": "Seven 0.5 mg tablets were prescribed and filled for severe anxiety as needed. This span connects treatment decisions, not confirmed daily use."
+        "note": "Initial prescription January 9; dispensed January 12. Maya reports beginning January 12.",
+        "end": "2026-02-11"
       },
       {
-        "start": "2022-10-26",
-        "end": "2022-11-02",
-        "label": "1 mg",
+        "start": "2026-02-12",
+        "label": "50 mg daily",
         "status": "prescribed",
-        "note": "A 30-tablet supply of 1 mg was filled; actual frequency is unknown."
+        "note": "Increased February 12 after home readings remained elevated. The 25 mg order is discontinued. Renewed and 30 tablets dispensed May 5; four-tablet bridge dispensed June 2 covers June 4–7; 90 tablets dispensed June 8. Ongoing at demo end.",
+        "end": "2026-06-26"
       },
       {
-        "start": "2022-11-02",
-        "end": "2022-11-16",
-        "label": "0.75 mg",
-        "status": "planned",
-        "note": "Planned taper step for two weeks. A 0.5 mg tablet supply was filled, but actual doses are unresolved."
-      },
-      {
-        "start": "2022-11-16",
-        "end": "2022-12-05",
-        "label": "0.5 mg",
-        "status": "planned",
-        "note": "Planned next taper step. Continued use was reported during care, but not continuously confirmed."
-      },
-      {
-        "start": "2022-12-02",
-        "label": "1 mg reported",
+        "start": "2026-02-18",
+        "label": "50 mg use confirmed",
         "status": "reported",
-        "note": "Clancy reported taking 1 mg after intrusive thoughts and returning to sleep."
+        "note": "Bottle review confirms Maya reports the revised dose and has removed the old directions from her routine."
       },
       {
-        "start": "2022-12-03",
-        "label": "0.5 mg reported",
+        "start": "2026-05-12",
+        "label": "90-day supply planned",
+        "status": "planned",
+        "note": "Coverage review plans a longer supply without changing the dose. Dispensing is not implied until the June 8 pharmacy record.",
+        "end": "2026-06-07"
+      },
+      {
+        "start": "2026-06-08",
+        "label": "50 mg use confirmed",
         "status": "reported",
-        "note": "Clancy reported a 0.5 mg dose and short-term relief."
+        "note": "Maya reports continued daily use at the June medication review; BP readings are documented separately."
+      }
+    ]
+  },
+  {
+    "name": "Atorvastatin",
+    "generic": "atorvastatin calcium",
+    "color": "#5b9fb4",
+    "className": "Statin · cholesterol",
+    "summary": "Added after a shared decision in January. LDL-C decreases from 146 to 76 mg/dL across the demo, while the recorded prescription remains 20 mg nightly.",
+    "segments": [
+      {
+        "start": "2026-01-30",
+        "label": "20 mg nightly",
+        "status": "prescribed",
+        "note": "Initial order January 30; 30 tablets dispensed January 31. Continued after the April and June reviews. Thirty-tablet refill dispensed May 5; four-tablet bridge dispensed June 2 covers June 4–7; 90 tablets dispensed June 8. No stop order at demo end.",
+        "end": "2026-06-26"
       },
       {
-        "start": "2023-01-01",
-        "end": "2023-01-05",
-        "label": "Inpatient plan",
+        "start": "2026-02-18",
+        "label": "Started Jan 31 · reported",
+        "status": "reported",
+        "note": "Maya reports beginning atorvastatin January 31 and no muscle symptoms at the pharmacist review."
+      },
+      {
+        "start": "2026-05-12",
+        "label": "90-day supply planned",
+        "status": "planned",
+        "note": "Longer supply considered for stable therapy and travel planning; prescription dose remains unchanged.",
+        "end": "2026-06-07"
+      },
+      {
+        "start": "2026-06-08",
+        "label": "Current use confirmed",
+        "status": "reported",
+        "note": "Patient reports taking 20 mg nightly at the bottle review. The report is distinct from pharmacy dispensing."
+      }
+    ]
+  },
+  {
+    "name": "Budesonide inhaler",
+    "generic": "budesonide inhalation powder",
+    "color": "#b189c8",
+    "className": "Inhaled corticosteroid · previous controller",
+    "summary": "Existing asthma controller at intake. Replaced by the combination controller at hospital discharge; the old order is explicitly marked discontinued.",
+    "segments": [
+      {
+        "start": "2026-01-06",
+        "label": "180 mcg twice daily",
+        "status": "reported",
+        "note": "At intake Maya reports an established prescription of one 180 mcg inhalation twice daily. February 18 and 20 follow-up supports continued reported use; historical fills before the demo are not imported.",
+        "end": "2026-03-11"
+      },
+      {
+        "start": "2026-03-14",
+        "label": "Discontinued at discharge",
+        "status": "planned",
+        "note": "Discharge reconciliation replaces the budesonide-only inhaler with budesonide–formoterol. This marker is a stop instruction, not active treatment. Maya confirms stopping the old inhaler March 18."
+      }
+    ]
+  },
+  {
+    "name": "Budesonide–formoterol",
+    "generic": "budesonide / formoterol fumarate",
+    "color": "#56978b",
+    "className": "ICS / LABA · maintenance inhaler",
+    "summary": "Introduced at March discharge. Bridge supply, prior authorization, retail dispensing and technique checks document a complete medication-access story.",
+    "segments": [
+      {
+        "start": "2026-03-14",
+        "label": "80/4.5 · 2 puffs twice daily",
+        "status": "prescribed",
+        "note": "Patient-specific maintenance prescription at discharge, with separate albuterol rescue therapy. Seven-day bridge supply dispensed March 14; 120-actuation retail inhaler dispensed March 17. Authorization approved March 17; routine refills recorded April 17, May 17 and June 16; renewed May 29. Ongoing at demo end.",
+        "end": "2026-06-26"
+      },
+      {
+        "start": "2026-03-16",
+        "label": "Authorization pending → approved",
+        "status": "planned",
+        "note": "A coverage workflow interval, not a medication gap. The hospital bridge supply is available while the demo payer processes the request; Maya reports no interruption.",
+        "end": "2026-03-17"
+      },
+      {
+        "start": "2026-03-19",
+        "label": "Technique and use checked",
+        "status": "reported",
+        "note": "Maya reports the prescribed maintenance use at pharmacist review, presents the inhaler and demonstrates spacer technique after coaching."
+      },
+      {
+        "start": "2026-06-08",
+        "label": "Current use confirmed",
+        "status": "reported",
+        "note": "Patient confirms the active combination controller at the June medication review. The discontinued budesonide-only product is not used concurrently."
+      }
+    ]
+  },
+  {
+    "name": "Albuterol HFA",
+    "generic": "albuterol sulfate",
+    "color": "#6586bc",
+    "className": "Short-acting bronchodilator · rescue",
+    "summary": "Existing rescue inhaler with a February replacement refill, more frequent reported use before the March admission and infrequent use after recovery.",
+    "segments": [
+      {
+        "start": "2026-01-06",
+        "label": "Existing rescue · reported",
+        "status": "reported",
+        "note": "At intake Maya reports albuterol 90 mcg as her established rescue inhaler, used less than weekly. No pre-demo dispensing record is imported."
+      },
+      {
+        "start": "2026-02-24",
+        "label": "90 mcg · as needed",
+        "status": "prescribed",
+        "note": "Replacement prescription: two puffs every 4–6 hours as needed under Maya’s individualized asthma plan; one 200-actuation inhaler dispensed February 25. A prescription span does not indicate continuous use.",
+        "end": "2026-06-26"
+      },
+      {
+        "start": "2026-03-10",
+        "label": "Increased use reported",
+        "status": "reported",
+        "note": "Portal and triage encounters record increasing rescue use during the respiratory illness; exact actuation counts are not asserted.",
+        "end": "2026-03-11"
+      },
+      {
+        "start": "2026-05-20",
+        "label": "Infrequent use reported",
+        "status": "reported",
+        "note": "At pulmonary follow-up Maya reports one rescue use after a dusty work task during the preceding four weeks. The active prescription is unchanged."
+      }
+    ]
+  },
+  {
+    "name": "Prednisone",
+    "generic": "prednisone",
+    "color": "#cc9276",
+    "className": "Systemic corticosteroid · short course",
+    "summary": "Five-day treatment during the March asthma episode: three inpatient doses and two remaining outpatient doses, then completed.",
+    "segments": [
+      {
+        "start": "2026-03-12",
+        "label": "40 mg daily · administered",
         "status": "inpatient",
-        "note": "McLean replaced diazepam with lorazepam; the discharge prescription strength was 1 mg. Individual administration times are unavailable."
+        "note": "Synthetic hospital MAR records prednisone 40 mg orally on March 12, 13 and 14.",
+        "end": "2026-03-14"
       },
       {
-        "start": "2023-01-05",
-        "label": "1 mg ×14",
+        "start": "2026-03-15",
+        "label": "40 mg · final two doses",
         "status": "prescribed",
-        "note": "A 14-tablet supply was prescribed at discharge for short-term or as-needed use."
+        "note": "Two remaining daily doses are dispensed at March 14 discharge, completing the five-day order. This is not maintenance treatment.",
+        "end": "2026-03-16"
       },
       {
-        "start": "2023-01-06",
-        "label": "1 mg reported",
+        "start": "2026-03-16",
+        "label": "Course completed · reported",
         "status": "reported",
-        "note": "Clancy specifically reported taking 1 mg at follow-up. Lorazepam was replaced with diazepam in the January 9 plan."
+        "note": "At the March 16 transition call Maya reports taking the last dose. Completion is reconfirmed in the March 18 MyChart thread."
       }
     ]
   },
   {
-    "name": "Buspar",
-    "generic": "buspirone",
-    "color": "#7f84ce",
-    "className": "Anxiolytic",
-    "summary": "Prescribed as a daily non-benzodiazepine option; initially not started and later use unknown.",
+    "name": "Ipratropium–albuterol",
+    "generic": "ipratropium bromide / albuterol sulfate",
+    "color": "#9d88a9",
+    "className": "Nebulized bronchodilators · hospital only",
+    "summary": "Administered during the acute asthma admission; no outpatient prescription or ongoing home nebulizer use is part of the demo.",
     "segments": [
       {
-        "start": "2022-10-26",
-        "label": "5 mg ×30",
-        "status": "prescribed",
-        "note": "A 30-tablet supply was filled. On November 2 Clancy reported that she had not started it."
-      },
-      {
-        "start": "2022-11-09",
-        "label": "5 mg ×30",
-        "status": "prescribed",
-        "note": "A second supply was filled; subsequent use is not established."
-      }
-    ]
-  },
-  {
-    "name": "Hydroxyzine",
-    "generic": "hydroxyzine",
-    "color": "#7aa1cd",
-    "className": "Antihistamine",
-    "summary": "Offered as an alternative for anxiety or sleep; ingestion is not established.",
-    "segments": [
-      {
-        "start": "2022-10-26",
-        "label": "25 mg ×30",
-        "status": "prescribed",
-        "note": "A 30-tablet supply was prescribed and filled; use is unknown. A later offer at the November 29 visit was declined."
-      }
-    ]
-  },
-  {
-    "name": "Desyrel",
-    "generic": "trazodone",
-    "color": "#269f9a",
-    "className": "Antidepressant / sleep treatment",
-    "summary": "Used in sleep treatment plans after emergency care, during McLean admission and in outpatient follow-up.",
-    "segments": [
-      {
-        "start": "2022-11-16",
-        "label": "50 mg ×30",
-        "status": "prescribed",
-        "note": "Filled after the emergency-department visit. Clancy later reported help falling asleep but not maintaining sleep."
-      },
-      {
-        "start": "2022-12-01",
-        "label": "50–150 mg history",
-        "status": "reported",
-        "note": "During the December 1 visit Clancy described prior trazodone doses from 50 to 150 mg with minimal benefit; exact dates and duration were not established."
-      },
-      {
-        "start": "2023-01-01",
-        "end": "2023-01-05",
-        "label": "50 mg / as needed",
+        "start": "2026-03-12",
+        "label": "0.5 / 2.5 mg per 3 mL",
         "status": "inpatient",
-        "note": "Used in the inpatient sleep plan; the discharge prescription strength was 50 mg. Individual doses and administration times are unavailable."
+        "note": "ED and inpatient administration documented in the synthetic MAR. Treatments are spaced as breathing improves; the plotted span does not represent continuous administration.",
+        "end": "2026-03-13"
       },
       {
-        "start": "2023-01-05",
-        "label": "50 mg ×28",
-        "status": "prescribed",
-        "note": "A 28-tablet supply was filled at discharge."
-      },
-      {
-        "start": "2023-01-06",
-        "label": "100 mg reported",
-        "status": "reported",
-        "note": "Clancy reported taking 100 mg at the January 6 follow-up."
-      },
-      {
-        "start": "2023-01-12",
-        "label": "150 mg ×30",
-        "status": "prescribed",
-        "note": "The prescription increased to 150 mg; a 30-tablet supply was filled. Nightly adherence is unknown."
+        "start": "2026-03-14",
+        "label": "Stopped before discharge",
+        "status": "planned",
+        "note": "Discharge reconciliation explicitly removes inpatient nebulized combination therapy. The active home rescue prescription is albuterol HFA."
       }
     ]
   },
   {
-    "name": "Prozac",
-    "generic": "fluoxetine",
-    "color": "#c7a34c",
-    "className": "SSRI",
-    "summary": "Brief November trial; a later retrial was considered and then held.",
+    "name": "Insulin lispro",
+    "generic": "insulin lispro",
+    "color": "#bf7f96",
+    "className": "Rapid-acting insulin · hospital only",
+    "summary": "Brief correction treatment during steroid-associated acute-care glucose elevations. Stopped before discharge; Maya does not use insulin at home.",
     "segments": [
       {
-        "start": "2022-11-21",
-        "label": "10 mg ×56",
-        "status": "prescribed",
-        "note": "A 56-tablet supply was filled with an intended increase to 20 mg only if tolerated."
-      },
-      {
-        "start": "2022-11-22",
-        "end": "2022-11-25",
-        "label": "10 mg reported",
-        "status": "reported",
-        "note": "Clancy reported beginning November 22; treatment was stopped after a brief trial with worsening sleep and disconnection. The planned 20 mg step was not established as taken."
-      },
-      {
-        "start": "2022-11-30",
-        "end": "2022-12-07",
-        "label": "Retrial considered",
-        "status": "planned",
-        "note": "A 10 mg retrial was discussed, then held. December use is not established."
-      }
-    ]
-  },
-  {
-    "name": "Ambien",
-    "generic": "zolpidem",
-    "color": "#c38ac6",
-    "className": "Sedative-hypnotic",
-    "summary": "A one-dose trial was filled; ingestion is unknown. A later higher-dose offer was declined.",
-    "segments": [
-      {
-        "start": "2022-11-25",
-        "label": "5 mg ×1",
-        "status": "prescribed",
-        "note": "One 5 mg tablet was prescribed and filled as a single-dose trial; use is not established."
-      }
-    ]
-  },
-  {
-    "name": "Remeron",
-    "generic": "mirtazapine",
-    "color": "#d084a5",
-    "className": "Antidepressant",
-    "summary": "Brief, interrupted treatment in late November and early December, with symptoms reported during care-team messages.",
-    "segments": [
-      {
-        "start": "2022-11-25",
-        "label": "7.5 mg ×30",
-        "status": "prescribed",
-        "note": "A 30-tablet supply was filled."
-      },
-      {
-        "start": "2022-11-26",
-        "label": "7.5 mg reported",
-        "status": "reported",
-        "note": "Clancy reported taking 7.5 mg with clonazepam 0.5 mg and sleeping."
-      },
-      {
-        "start": "2022-11-27",
-        "end": "2022-12-02",
-        "label": "15 mg reported",
-        "status": "reported",
-        "note": "A 15 mg dose was reported on November 27 and 29 and in a stop/restart sequence through December 2. The span does not imply uninterrupted daily use."
-      }
-    ]
-  },
-  {
-    "name": "Klonopin",
-    "generic": "clonazepam",
-    "color": "#d79676",
-    "className": "Benzodiazepine",
-    "summary": "Brief combination with mirtazapine; stopping was discussed after feeling disconnected.",
-    "segments": [
-      {
-        "start": "2022-11-25",
-        "label": "0.5 mg ×14",
-        "status": "prescribed",
-        "note": "A 14-tablet supply was filled. Instructions included not combining with lorazepam."
-      },
-      {
-        "start": "2022-11-26",
-        "end": "2022-11-28",
-        "label": "0.5 mg reported",
-        "status": "reported",
-        "note": "Clancy reported 0.5 mg on two nights with mirtazapine, then discussed stopping after feeling disconnected. Dates are approximate within the reported sequence."
-      }
-    ]
-  },
-  {
-    "name": "Seroquel",
-    "generic": "quetiapine",
-    "color": "#4b9fc1",
-    "className": "Second-generation antipsychotic",
-    "summary": "Initially targeted sleep, then a possible mood-related indication, before outpatient and inpatient tapering.",
-    "segments": [
-      {
-        "start": "2022-11-30",
-        "label": "25 mg ×30",
-        "status": "prescribed",
-        "note": "A 30-tablet supply was filled for insomnia."
-      },
-      {
-        "start": "2022-12-01",
-        "end": "2022-12-03",
-        "label": "25 mg reported",
-        "status": "reported",
-        "level": 1,
-        "note": "Clancy reported 25 mg with mirtazapine during the December 1–2 message sequence."
-      },
-      {
-        "start": "2022-12-02",
-        "end": "2022-12-06",
-        "label": "50 mg target",
-        "status": "planned",
-        "note": "Jollotta recommended 50 mg for sleep; use at this dose is not established."
-      },
-      {
-        "start": "2022-12-07",
-        "end": "2022-12-08",
-        "label": "100 mg target",
-        "status": "planned",
-        "note": "First proposed step in a four-night titration."
-      },
-      {
-        "start": "2022-12-08",
-        "end": "2022-12-09",
-        "label": "200 mg target",
-        "status": "planned",
-        "note": "Second proposed titration step."
-      },
-      {
-        "start": "2022-12-09",
-        "end": "2022-12-10",
-        "label": "300 mg target",
-        "status": "planned",
-        "note": "Third proposed step; use at this dose was not established."
-      },
-      {
-        "start": "2022-12-10",
-        "end": "2022-12-11",
-        "label": "400 mg target",
-        "status": "planned",
-        "note": "Recommended target only; 400 mg was not established as taken."
-      },
-      {
-        "start": "2022-12-09",
-        "end": "2022-12-17",
-        "label": "200 mg reported",
-        "status": "reported",
-        "level": 1,
-        "note": "On December 12 Clancy reported 200 mg for the preceding three nights; 200 mg remained the reported dose at December 16 follow-up. Daily adherence is not independently confirmed."
-      },
-      {
-        "start": "2022-12-16",
-        "end": "2022-12-20",
-        "label": "300 mg target",
-        "status": "planned",
-        "note": "A 300 mg dose was recommended and an ER supply was filled December 19; use at 300 mg is unknown."
-      },
-      {
-        "start": "2022-12-21",
-        "end": "2022-12-25",
-        "label": "200 mg taper",
-        "status": "planned",
-        "note": "First four-night step of the outpatient taper."
-      },
-      {
-        "start": "2022-12-25",
-        "end": "2022-12-29",
-        "label": "100 mg taper",
-        "status": "planned",
-        "note": "Second four-night step of the outpatient taper."
-      },
-      {
-        "start": "2022-12-29",
-        "end": "2023-01-02",
-        "label": "50 mg taper",
-        "status": "planned",
-        "note": "Final planned outpatient dose before stopping; the inpatient team subsequently adjusted the taper."
-      },
-      {
-        "start": "2023-01-01",
-        "end": "2023-01-02",
-        "label": "75 mg taper",
+        "start": "2026-03-13",
+        "label": "Correction doses · administered",
         "status": "inpatient",
-        "level": 1,
-        "note": "McLean taper sequence was approximately 75 → 50 → 25 mg → stop. Day boundaries are approximate; individual administration times are unavailable."
+        "note": "Synthetic MAR documents protocol-directed correction doses March 13 and 14. A glucose peak of 268 mg/dL is recorded in the hospital narrative; exact doses are not invented in this summary.",
+        "end": "2026-03-14"
       },
       {
-        "start": "2023-01-02",
-        "end": "2023-01-03",
-        "label": "50 mg taper",
-        "status": "inpatient",
-        "level": 1,
-        "note": "Intermediate inpatient taper step; the day boundary is approximate."
-      },
-      {
-        "start": "2023-01-03",
-        "end": "2023-01-05",
-        "label": "25 mg taper",
-        "status": "inpatient",
-        "level": 1,
-        "note": "Final inpatient taper step before discontinuation; no further quetiapine was planned at discharge."
-      }
-    ]
-  },
-  {
-    "name": "Valium",
-    "generic": "diazepam",
-    "color": "#c1954e",
-    "className": "Benzodiazepine",
-    "summary": "Used in a longer-half-life taper strategy in December and again in January.",
-    "segments": [
-      {
-        "start": "2022-12-06",
-        "end": "2022-12-09",
-        "label": "5 mg fills",
-        "status": "prescribed",
-        "note": "Short supplies were filled December 6, 7 and 9. The December 6 quantity is uncertain; later quantities were two and eight tablets."
-      },
-      {
-        "start": "2022-12-09",
-        "end": "2022-12-13",
-        "label": "2.5 mg reported",
-        "status": "reported",
-        "note": "On December 12 Clancy reported 2.5 mg nightly for the preceding three nights."
-      },
-      {
-        "start": "2022-12-13",
-        "end": "2022-12-20",
-        "label": "2 mg taper plan",
+        "start": "2026-03-14",
+        "label": "No outpatient prescription",
         "status": "planned",
-        "note": "The December 13 plan was 2 mg nightly; actual frequency varied in later patient reports."
-      },
-      {
-        "start": "2022-12-19",
-        "label": "2 mg every other night",
-        "status": "reported",
-        "note": "Clancy reported using 2 mg every other night and requested a refill."
-      },
-      {
-        "start": "2023-01-09",
-        "label": "5 mg ×14",
-        "status": "prescribed",
-        "note": "Tufts changed lorazepam to diazepam; a 14-tablet supply was filled. Actual taper adherence is unknown."
-      },
-      {
-        "start": "2023-01-13",
-        "end": "2023-01-23",
-        "label": "2 mg fills",
-        "status": "prescribed",
-        "note": "Multiple 2 mg supplies are represented. Some quantities and prescriber attribution remain unresolved; this span does not establish daily use."
-      },
-      {
-        "start": "2023-01-23",
-        "label": "2 mg reported",
-        "status": "reported",
-        "note": "Clancy reported being down to 2 mg, with more morning anxiety; tapering was slowed."
+        "note": "Discharge team stops correction insulin and resumes metformin. This marker represents a discontinuation decision, not future insulin treatment."
       }
     ]
   },
   {
-    "name": "Lamictal",
-    "generic": "lamotrigine",
-    "color": "#6fa887",
-    "className": "Mood stabilizer / anticonvulsant",
-    "summary": "Prescribed and filled at 25 mg; actual use is unknown in the selected treatment history.",
+    "name": "Cetirizine",
+    "generic": "cetirizine hydrochloride",
+    "color": "#829c62",
+    "className": "Antihistamine · seasonal symptoms",
+    "summary": "A brief spring as-needed prescription for nasal and eye symptoms. Maya reports intermittent use and no need for a refill; marked inactive in late May.",
     "segments": [
       {
-        "start": "2022-12-16",
-        "label": "25 mg ×30",
+        "start": "2026-04-03",
+        "label": "10 mg daily as needed",
         "status": "prescribed",
-        "note": "Tufts prescribed a 30-tablet supply; Jollotta endorsed the plan and discussed rash precautions and gradual titration. Ingestion was not established."
-      }
-    ]
-  },
-  {
-    "name": "Elavil",
-    "generic": "amitriptyline",
-    "color": "#9887c8",
-    "className": "Tricyclic antidepressant",
-    "summary": "Prescribed in January, with a reported 10 mg start and a later ordered increase to 20 mg.",
-    "segments": [
-      {
-        "start": "2023-01-16",
-        "label": "10 mg ×30",
-        "status": "prescribed",
-        "note": "A 30-tablet supply was prescribed and filled."
+        "note": "Thirty-tablet order April 3; pickup April 4. The interval reflects an available as-needed prescription, not daily administration. Seasonal course marked inactive May 27.",
+        "end": "2026-05-27"
       },
       {
-        "start": "2023-01-23",
-        "label": "10 mg reported",
+        "start": "2026-05-27",
+        "label": "Intermittent use · now inactive",
         "status": "reported",
-        "note": "At follow-up Clancy reported starting 10 mg without apparent side effects; the precise first dose date was not confirmed."
-      },
-      {
-        "start": "2023-01-23",
-        "label": "20 mg ordered",
-        "status": "prescribed",
-        "note": "Tufts ordered an increase to 20 mg. Whether this dose was taken is unknown."
+        "note": "Maya reports use on about ten spring days and none for more than a week. Remaining tablets do not imply ongoing treatment."
       }
     ]
   }
