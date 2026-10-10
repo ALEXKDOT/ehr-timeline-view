@@ -1,265 +1,140 @@
-"use client";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { demoHighlights, events, medications, patient, type Category, type Medication, type TimelineEvent } from './clinical-data';
+import { DAY, stamp, isoDate, formatDate, fullRange, clampRange, zoomRange, panRange, filterEvents, groupEvents, medicationEvidence, relatedMedicationEvents, type Range, type EventGroup } from './timeline-model';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { categoryMeta, demoHighlights, events, medications, patient, type Category, type Medication, type TimelineEvent } from "./clinical-data";
+const categories: Category[] = ['hospital', 'visit', 'message', 'telephone', 'lab', 'medication'];
+const ordered = [...events].sort((a,b) => a.date.localeCompare(b.date));
+const trackMeta: Record<Category, {label:string; code:string; color:string}> = {
+  hospital: {label:'Hospital care',code:'H',color:'#87573b'}, visit:{label:'Visits',code:'V',color:'#306d67'},
+  message:{label:'MyChart',code:'M',color:'#456b96'}, telephone:{label:'Telephone',code:'T',color:'#856824'},
+  lab:{label:'Results',code:'L',color:'#486e79'}, medication:{label:'Medication events',code:'Rx',color:'#786194'},
+};
+type Selection = {kind:'event';event:TimelineEvent} | {kind:'cluster';group:EventGroup} | {kind:'medication';medication:Medication;index?:number};
+const shortDate = (time:string|number) => formatDate(time,{month:'short',day:'numeric'});
+const accent = (color:string) => ({'--track':color} as CSSProperties);
+const span = (range:Range) => Math.max(DAY,range.end-range.start);
+const percent = (time:number,range:Range) => Math.max(0,Math.min(100,(time-range.start)/span(range)*100));
+const titleText = (event:TimelineEvent) => event.title.replace(/^(?:MyChart|Telephone|Prescription(?:s)?(?: renewed)?|Primary care|Lab results|Results):\s*/i,'');
+const hospitalEvents = ordered.filter(event=>event.category==='hospital');
+const orientationIds = ['jan06-intake','mar12-ed','jun26-care-plan'];
+const calendarMonths:{start:number;end:number;label:string}[]=[];
+for(let cursor=new Date(fullRange.start);cursor.getTime()<=fullRange.end;){const year=cursor.getUTCFullYear(),month=cursor.getUTCMonth();calendarMonths.push({start:Math.max(fullRange.start,Date.UTC(year,month,1)),end:Math.min(fullRange.end,Date.UTC(year,month+1,0)),label:formatDate(cursor.getTime(),{month:'short',...(fullRange.end-fullRange.start>365*DAY?{year:'2-digit' as const}:{})})});cursor=new Date(Date.UTC(year,month+1,1));}
 
-const categories = Object.keys(categoryMeta) as Category[];
-const chronologicalEvents = [...events].sort((a, b) => a.date.localeCompare(b.date));
-const DAY = 86_400_000;
-const CARD_WIDTH = 260;
-const CARD_HEIGHT = 132;
-const CARD_ROW_STEP = 152;
-const BASE_WIDTH = 6200;
-const startTime = stamp(patient.startDate);
-const endTime = stamp(patient.endDate);
-
-function stamp(value: string) { return Date.parse(`${value.slice(0, 10)}T12:00:00Z`); }
-function formatDate(value: string | number, options: Intl.DateTimeFormatOptions = { month: "short", day: "numeric", year: "numeric" }) {
-  return new Intl.DateTimeFormat("en-US", { ...options, timeZone: "UTC" }).format(new Date(typeof value === "number" ? value : stamp(value)));
-}
-function timeFraction(time: number) {
-  return (time - startTime) / Math.max(DAY, endTime - startTime);
-}
-function fractionTime(fraction: number) {
-  return startTime + fraction * (endTime - startTime);
-}
-function position(value: string | number, width: number) {
-  return 112 + Math.max(0, Math.min(1, timeFraction(typeof value === "number" ? value : stamp(value)))) * (width - 224);
-}
-function colorStyle(color: string): CSSProperties { return { "--accent": color } as CSSProperties; }
-
-const months: { time: number; label: string; short: string }[] = [];
-const month = new Date(startTime);
-month.setUTCDate(1);
-month.setUTCMonth(month.getUTCMonth() + 1);
-while (month.getTime() < endTime) {
-  months.push({ time: month.getTime(), label: formatDate(month.getTime(), { month: "long", year: "numeric" }), short: formatDate(month.getTime(), { month: "short" }) });
-  month.setUTCMonth(month.getUTCMonth() + 1);
+function SourceNarrative({event}:{event:TimelineEvent}) {
+  const conversation = event.category==='message'||event.category==='telephone';
+  return <div className={conversation?'source-thread':'source-lines'}>{event.details.map((text,index)=>{
+    if(!conversation) return <p key={index}>{text}</p>;
+    const divider=text.indexOf(': ');
+    const speaker=divider>0&&divider<90?text.slice(0,divider):'Record annotation';
+    const body=divider>0&&divider<90?text.slice(divider+2):text;
+    const isPatient=speaker.includes(patient.name)||/^patient\b/i.test(speaker);
+    const annotation=/^(?:thread|outcome|staff action|follow-up|record|status|routing|documentation)/i.test(speaker);
+    return <div key={index} className={`source-message ${isPatient?'patient-voice':''} ${annotation?'annotation':''}`}><strong>{speaker}</strong><p>{body}</p></div>;
+  })}</div>;
 }
 
-type Selection = { kind: "event"; event: TimelineEvent } | { kind: "cluster"; items: TimelineEvent[] } | { kind: "medication"; medication: Medication; segmentIndex?: number };
-type Card = { id: string; items: TimelineEvent[]; x: number; left: number; lane: number; top: number; color: string };
-
-function layoutCards(items: TimelineEvent[], width: number) {
-  const groups: { items: TimelineEvent[]; x: number }[] = [];
-  for (const event of items) {
-    const x = position(event.date, width);
-    const previous = groups.at(-1);
-    if (previous && x - previous.x < (CARD_WIDTH + 18) / 6) previous.items.push(event);
-    else groups.push({ items: [event], x });
-  }
-  const ends: number[] = [];
-  const packed = groups.map((group) => {
-    const left = Math.max(12, Math.min(width - CARD_WIDTH - 12, group.x - CARD_WIDTH / 2));
-    let lane = ends.findIndex((end) => end + 12 <= left);
-    if (lane === -1) lane = ends.length;
-    ends[lane] = left + CARD_WIDTH;
-    return { ...group, id: group.items[0].id, left, lane, color: group.items.length === 1 ? categoryMeta[group.items[0].category].color : "#a6bfc9" };
-  });
-  const rowsAbove = Math.max(1, Math.ceil(ends.length / 2));
-  const rowsBelow = Math.max(1, Math.floor(ends.length / 2));
-  const axis = rowsAbove * CARD_ROW_STEP + 32;
-  const height = axis + rowsBelow * CARD_ROW_STEP + 32;
-  const cards: Card[] = packed.map((card) => ({ ...card, top: card.lane % 2 === 0 ? 20 + Math.floor(card.lane / 2) * CARD_ROW_STEP : axis + 24 + Math.floor(card.lane / 2) * CARD_ROW_STEP }));
-  return { cards, axis, height };
-}
-
-function medicationLayout(medication: Medication, width: number) {
-  const laneEnds: number[] = [];
-  const segments = medication.segments.map((segment, index) => ({ segment, index, left: position(segment.start, width), right: position(segment.end ?? segment.start, width) }))
-    .sort((a, b) => a.left - b.left || a.index - b.index)
-    .map((item) => {
-      // Labels remain readable even for a single date. The separate rail shows
-      // the actual interval; the label width never represents treatment duration.
-      const labelWidth = Math.min(250, Math.max(116, item.segment.label.length * 8.5 + 28));
-      const labelInset = width >= 700 ? 202 : 12;
-      const labelLeft = Math.max(labelInset, Math.min(item.left, width - labelWidth - 12));
-      const right = Math.max(labelLeft + labelWidth, item.right);
-      let lane = laneEnds.findIndex((end) => end + 12 <= Math.min(labelLeft, item.left));
-      if (lane === -1) lane = laneEnds.length;
-      laneEnds[lane] = right;
-      return { ...item, labelLeft, labelWidth, top: 12 + lane * 54 };
-    });
-  return { segments, height: Math.max(74, laneEnds.length * 54 + 20) };
-}
-
-function CategoryDot({ category }: { category: Category }) {
-  return <i className="category-dot" style={colorStyle(categoryMeta[category].color)} aria-hidden="true" />;
-}
-
-function EntryDetails({ event }: { event: TimelineEvent }) {
-  const conversation = event.category === "message" || event.category === "telephone";
-  if (!conversation) return <div className="detail-section"><h3>{event.category === "lab" ? "Results & interpretation" : "Encounter details"}</h3><ul className="detail-list">{event.details.map((detail, index) => <li key={index}>{detail}</li>)}</ul></div>;
-  return <div className="detail-section"><h3>{event.category === "message" ? "MyChart conversation" : "Telephone encounter"}</h3><ol className="conversation-thread">{event.details.map((detail, index) => {
-    const divider = detail.indexOf(": ");
-    const speaker = divider > 0 && divider < 90 ? detail.slice(0, divider) : "Encounter note";
-    const message = divider > 0 && divider < 90 ? detail.slice(divider + 2) : detail;
-    const fromPatient = speaker.includes(patient.name) || /^patient\b/i.test(speaker);
-    return <li className={fromPatient ? "patient-message" : "team-message"} key={index}><span className="message-author">{speaker}</span><p>{message}</p></li>;
-  })}</ol></div>;
+function EvidenceTag({segment}:{segment:Medication['segments'][number]}) {
+  const evidence=medicationEvidence(segment);
+  return <span className={`evidence-tag ${segment.status}`}><span aria-hidden="true">{evidence.symbol}</span>{evidence.label}</span>;
 }
 
 export default function Home() {
-  const [search, setSearch] = useState("");
-  const [activeCategories, setActiveCategories] = useState<Category[]>(categories);
-  const [view, setView] = useState<"timeline" | "list">("timeline");
-  const [zoom, setZoom] = useState(1);
-  const [fit, setFit] = useState(false);
-  const [viewportWidth, setViewportWidth] = useState(1200);
-  const [scrollLeft, setScrollLeft] = useState(0);
-  const [showMedications, setShowMedications] = useState(true);
-  const [showScrollHint, setShowScrollHint] = useState(true);
-  const [selection, setSelection] = useState<Selection | null>(null);
-  const viewportRef = useRef<HTMLDivElement>(null);
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const pendingCenter = useRef<number | null>(null);
-  const query = search.trim().toLowerCase();
-  const filteredEvents = useMemo(() => chronologicalEvents.filter((event) => activeCategories.includes(event.category) && (!query || [event.title, event.short, event.summary, ...event.details, event.clinician, event.institution, event.medication, event.recordType, event.displayDate].filter(Boolean).join(" ").toLowerCase().includes(query))), [activeCategories, query]);
-  const filteredMedications = useMemo(() => medications.filter((medication) => !query || [medication.name, medication.generic, medication.summary, ...medication.segments.map((segment) => `${segment.label} ${segment.note}`)].join(" ").toLowerCase().includes(query)), [query]);
-  const canvasWidth = fit ? Math.max(320, viewportWidth) : Math.max(viewportWidth, BASE_WIDTH * zoom);
-  const layout = useMemo(() => layoutCards(filteredEvents, canvasWidth), [filteredEvents, canvasWidth]);
-  const activeIndex = selection?.kind === "event" ? filteredEvents.findIndex((event) => event.id === selection.event.id) : -1;
-  const rangeLabel = `${formatDate(startTime)} – ${formatDate(endTime)}`;
-  const isFiltered = search.length > 0 || activeCategories.length !== categories.length;
-  const dialogOpen = selection !== null;
-  const maxScroll = Math.max(0, canvasWidth - viewportWidth);
-  const scrollHintVisible = showScrollHint && maxScroll > 0;
+  const [range,updateRange]=useState<Range>(fullRange);
+  function setRange(next:Range|((current:Range)=>Range)){updateRange(current=>{const value=typeof next==='function'?next(current):next;return clampRange({start:Math.floor(value.start/DAY)*DAY,end:Math.floor(value.end/DAY)*DAY});});}
+  const [search,setSearch]=useState('');
+  const [active,setActive]=useState<Category[]>(categories);
+  const [view,setView]=useState<'timeline'|'list'>('timeline');
+  const [selection,setSelection]=useState<Selection|null>(null);
+  const [showMeds,setShowMeds]=useState(true);
+  const [showFilters,setShowFilters]=useState(false);
+  const [presentation,setPresentation]=useState(false);
+  const [plotWidth,setPlotWidth]=useState(900);
+  const [draftStart,setDraftStart]=useState(isoDate(fullRange.start));
+  const [draftEnd,setDraftEnd]=useState(isoDate(fullRange.end));
+  const [rangeError,setRangeError]=useState('');
+  const chartRef=useRef<HTMLDivElement>(null);
+  const inspectorRef=useRef<HTMLElement>(null);
+  const inspectorHeading=useRef<HTMLHeadingElement>(null);
+  const selectionOrigin=useRef<HTMLElement|null>(null);
+  const dateDisclosure=useRef<HTMLDetailsElement>(null);
+  const fromInput=useRef<HTMLInputElement>(null);
+  const throughInput=useRef<HTMLInputElement>(null);
+  const searchRef=useRef<HTMLInputElement>(null);
+  useEffect(()=>{const compact=window.matchMedia('(max-width:700px)');const adapt=()=>{if(compact.matches)setView('list');};adapt();compact.addEventListener('change',adapt);return()=>compact.removeEventListener('change',adapt);},[]);
+  const query=search.trim();
+  const matches=useMemo(()=>filterEvents(ordered,query,active),[query,active]);
+  const inRange=useMemo(()=>matches.filter(event=>stamp(event.date)>=range.start&&stamp(event.date)<=range.end),[matches,range]);
+  const medicationMatches=useMemo(()=>medications.filter(med=>!query||[med.name,med.generic,med.summary,...med.segments.map(s=>s.label+' '+s.note)].join(' ').toLowerCase().includes(query.toLowerCase())),[query]);
+  const selectedEvent=selection?.kind==='event'?selection.event:null;
+  const selectedIndex=selectedEvent?matches.findIndex(event=>event.id===selectedEvent.id):-1;
+  const isOverview=range.start===fullRange.start&&range.end===fullRange.end;
+  const filterActive=!!query||active.length!==categories.length;
+  const periodLabel=`${shortDate(range.start)} – ${formatDate(range.end)}`;
+  const trackGroups=useMemo(()=>categories.map(category=>({category,groups:groupEvents(matches.filter(event=>event.category===category),range,plotWidth,110)})),[matches,range,plotWidth]);
+  const ticks=useMemo(()=>{
+    const result:number[]=[];
+    if(span(range)>70*DAY){const d=new Date(range.start);d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+1);while(d.getTime()<range.end){result.push(d.getTime());d.setUTCMonth(d.getUTCMonth()+1);}}
+    else {const step=span(range)>35*DAY?7:span(range)>14*DAY?5:span(range)>7*DAY?2:1;for(let t=range.start+step*DAY;t<range.end;t+=step*DAY)result.push(t);}
+    const spacing=Math.max(1,Math.ceil(result.length/Math.max(1,plotWidth/85)));return result.filter((t,index)=>index%spacing===0&&percent(t,range)>8&&percent(t,range)<91);
+  },[range,plotWidth]);
+  const overviewBins=useMemo(()=>Array.from({length:24},(_,index)=>{
+    const start=fullRange.start+index*span(fullRange)/24;
+    const end=fullRange.start+(index+1)*span(fullRange)/24;
+    const items=ordered.filter(e=>stamp(e.date)>=start&&(index===23?stamp(e.date)<=end:stamp(e.date)<end));
+    return {start,end,items};
+  }),[]);
+  const maxBin=Math.max(...overviewBins.map(bin=>bin.items.length),1);
+  useEffect(()=>{const element=chartRef.current?.querySelector('.track-plot');if(!element)return;const observer=new ResizeObserver(([entry])=>setPlotWidth(Math.max(180,entry.contentRect.width)));observer.observe(element);return()=>observer.disconnect();},[]);
+  useEffect(()=>{setDraftStart(isoDate(range.start));setDraftEnd(isoDate(range.end));},[range]);
+  useEffect(()=>{if(selection){if(inspectorRef.current)inspectorRef.current.scrollTop=0;inspectorHeading.current?.focus({preventScroll:true});if(window.innerWidth<1050)inspectorRef.current?.scrollIntoView({block:'start',behavior:'auto'});}},[selection]);
+  useEffect(()=>{function keys(event:KeyboardEvent){const target=event.target as HTMLElement;if(target.closest('input,textarea,select,[contenteditable=true]'))return;if(event.key==='/'&&!event.metaKey&&!event.ctrlKey){event.preventDefault();searchRef.current?.focus();}if(event.key==='Escape'){if(selection){setSelection(null);(selectionOrigin.current?.isConnected?selectionOrigin.current:chartRef.current?.querySelector<HTMLElement>('[role=region]'))?.focus({preventScroll:window.innerWidth>=1050});}else if(presentation)setPresentation(false);}}window.addEventListener('keydown',keys);return()=>window.removeEventListener('keydown',keys);},[selection,presentation]);
+  function select(next:Selection){const origin=document.activeElement as HTMLElement;if(!inspectorRef.current?.contains(origin))selectionOrigin.current=origin;setSelection(next);}
+  function closeInspector(){setSelection(null);(selectionOrigin.current?.isConnected?selectionOrigin.current:chartRef.current?.querySelector<HTMLElement>('[role=region]'))?.focus({preventScroll:window.innerWidth>=1050});}
+  function ensureVisible(time:number){if(time<range.start||time>range.end)setRange(clampRange({start:time-span(range)/2,end:time+span(range)/2}));}
+  function selectEvent(event:TimelineEvent,locate=false){if(locate)ensureVisible(stamp(event.date));select({kind:'event',event});}
+  function zoom(factor:number){setRange(current=>zoomRange(current,factor));}
+  function pan(direction:number){setRange(current=>panRange(current,Math.round(span(current)/2/DAY)*DAY*direction));}
+  function focusPeriod(start:number,end:number,padding=3){setRange(clampRange({start:start-padding*DAY,end:end+padding*DAY}));}
+  function resetFilters(){setSearch('');setActive(categories);}
+  function stepEvent(delta:number){const event=matches[selectedIndex+delta];if(event)selectEvent(event,true);}
+  function hospitalTarget(delta:number){const index=selectedEvent?hospitalEvents.findIndex(e=>e.id===selectedEvent.id):-1;if(index>=0)return hospitalEvents[index+delta];const anchor=selectedEvent?stamp(selectedEvent.date):range.start;return delta>0?hospitalEvents.find(e=>stamp(e.date)>=anchor):[...hospitalEvents].reverse().find(e=>stamp(e.date)<=anchor);}
+  function stepHospital(delta:number){const event=hospitalTarget(delta);if(event){focusPeriod(stamp(event.date),stamp(event.date),7);selectEvent(event);}}
+  function applyDates(){const start=stamp(fromInput.current?.value??draftStart),end=stamp(throughInput.current?.value??draftEnd);if(!Number.isFinite(start)||!Number.isFinite(end)||start>end||start<fullRange.start||end>fullRange.end){setRangeError('Choose ordered dates within the available record.');return;}setRange(clampRange({start,end}));setRangeError('');if(dateDisclosure.current)dateDisclosure.current.open=false;}
+  function chooseDays(days:number){setRange(current=>{const center=(current.start+current.end)/2;return clampRange({start:center-(days-1)*DAY/2,end:center+(days-1)*DAY/2});});}
+  const medicationContent=(med:Medication)=><>{med.segments.map((segment,index)=><article className={`med-evidence ${selection?.kind==='medication'&&selection.index===index?'selected-evidence':''}`} key={index}><div><EvidenceTag segment={segment}/><time>{shortDate(segment.start)}{segment.end&&segment.end!==segment.start?` – ${shortDate(segment.end)}`:''}</time></div><h3>{segment.label}</h3><p>{segment.note}</p>{segment.end===patient.endDate&&<small>Interval reaches the end of this record. It does not establish a stop date.</small>}</article>)}</>;
 
-  useEffect(() => {
-    const element = viewportRef.current;
-    if (!element) return;
-    const observer = new ResizeObserver(([entry]) => setViewportWidth(entry.contentRect.width));
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [view]);
+  return <main className={`clinical-app ${presentation?'presentation-mode':''}`}>
+    <a className="skip-link" href="#timeline-workspace">Skip to timeline</a>
+    <header className="app-bar"><div className="brand"><svg className="brand-symbol" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M2 6h20M2 12h20M2 18h20M7 3v6m10 0v6m-7 0v6"/></svg><h1>EHR <b>Timeline</b></h1><span className="app-purpose">LONGITUDINAL CHART REVIEW</span></div><div className="app-actions"><span className="demo-label">SYNTHETIC DEMO</span><button aria-pressed={presentation} onClick={()=>setPresentation(!presentation)}>{presentation?'Exit presentation':'Presentation'}</button></div></header>
+    <section className="patient-strip" aria-label="Patient identity"><div className="identity"><span className="patient-monogram" aria-hidden="true">MB</span><div><h2>{patient.name}</h2><span>{patient.age} years <i>·</i> <code>{patient.recordId}</code></span></div></div><div className="patient-context-line"><strong>{patient.conditions.slice(0,4).join(' · ')}</strong><span>Jan 5 – Jun 26, 2026 <i>·</i> {events.length} entries <i>·</i> {medications.length} medication histories</span></div><details className="context-disclosure"><summary>Patient context</summary><div className="context-popover"><h3>Patient context</h3><p>{patient.summary}</p><h4>Recorded allergy</h4><p>{patient.allergies.join('; ')}</p><h4>Care team</h4><dl>{patient.careTeam.map(member=><div key={member.name}><dt>{member.name}</dt><dd>{member.role}</dd></div>)}</dl><p className="source-note">{patient.provenance}</p></div></details></section>
+    <div className="synthetic-strip"><span aria-hidden="true">◈</span> All records are fictional. <span>No live EHR connection.</span><span className="record-limits">Selected records; blank intervals do not establish absence of care.</span></div>
 
-  useEffect(() => {
-    const element = viewportRef.current;
-    if (!element) return;
-    if (pendingCenter.current !== null) {
-      element.scrollLeft = position(pendingCenter.current, canvasWidth) - element.clientWidth / 2;
-      pendingCenter.current = null;
-    }
-    setScrollLeft(element.scrollLeft);
-  }, [canvasWidth, view]);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (dialogOpen && !dialog.open) dialog.showModal();
-    else if (!dialogOpen && dialog.open) dialog.close();
-  }, [dialogOpen]);
-
-  const centerDate = useCallback((value: string | number) => {
-    viewportRef.current?.scrollTo({ left: position(value, canvasWidth) - viewportWidth / 2, behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-  }, [canvasWidth, viewportWidth]);
-
-  const selectEvent = useCallback((event: TimelineEvent) => { setSelection({ kind: "event", event }); centerDate(event.date); }, [centerDate]);
-  const stepEvent = useCallback((direction: number) => {
-    const next = filteredEvents[activeIndex + direction];
-    if (next) selectEvent(next);
-  }, [activeIndex, filteredEvents, selectEvent]);
-
-  function changeZoom(next: number) {
-    const middle = scrollLeft + viewportWidth / 2;
-    pendingCenter.current = fractionTime(Math.max(0, Math.min(1, (middle - 112) / (canvasWidth - 224))));
-    setFit(false);
-    setZoom(Math.max(0.35, Math.min(2, next)));
-  }
-  function resetFilters() { setSearch(""); setActiveCategories(categories); }
-  function toggleCategory(category: Category) { setActiveCategories((current) => current.includes(category) ? current.filter((item) => item !== category) : [...current, category]); }
-
-  return <main className="app-shell">
-    <a href="#timeline-workspace" className="skip-link">Skip to clinical records</a>
-    <header className="topbar">
-      <div className="brand-lockup"><div className="brand-mark" aria-hidden="true"><span /><span /><span /></div><div><h1>EHR Timeline View</h1></div></div>
-      <div className="prototype-tag"><span aria-hidden="true" />Fictional patient demo</div>
-    </header>
-
-    <section className="patient-header" aria-labelledby="patient-name">
-      <div className="patient-identity"><div className="patient-avatar" aria-hidden="true">{patient.initials}</div><div><p className="eyebrow">Fictional patient</p><h2 id="patient-name">{patient.name}</h2><p>{patient.age} years · {patient.recordId}</p></div></div>
-      <div className="patient-period"><span className="eyebrow">Date range</span><strong>{rangeLabel}</strong><span>Encounters · messages · treatment history</span></div>
-      <dl className="patient-stats"><div><dt>Clinical entries</dt><dd>{events.length}</dd></div><div><dt>MyChart threads</dt><dd>{events.filter((event) => event.category === "message").length}</dd></div><div><dt>Medications</dt><dd>{medications.length}</dd></div></dl>
-    </section>
-
-    <div className="prototype-note"><span className="note-symbol" aria-hidden="true">i</span><p><strong>100% fictional.</strong> All people, messages, results and treatment plans are invented. No real patient data or live EHR connection.</p></div>
-
-    <details className="patient-context">
-      <summary><span>Patient context & care team</span><span className="context-preview">{patient.conditions.join(" · ")}</span></summary>
-      <div className="context-body"><div><p className="eyebrow">The care story</p><p>{patient.summary}</p><p className="synthetic-provenance">{patient.provenance}</p><div className="condition-list">{patient.conditions.map((condition) => <span key={condition}>{condition}</span>)}</div><p className="allergy-note"><strong>Recorded allergies:</strong> {patient.allergies.join("; ")}</p></div><div><p className="eyebrow">Fictional care team</p><ul className="context-team">{patient.careTeam.map((member) => <li key={member.name}><strong>{member.name}</strong><span>{member.role}</span></li>)}</ul></div></div>
-    </details>
-
-    <section id="timeline-workspace" className="workspace" aria-label="Clinical records">
-      <div className="control-deck">
-        <div className="workspace-heading"><div><h2>Clinical records</h2></div><div className="view-switch" role="group" aria-label="Record view"><button className={view === "timeline" ? "active" : ""} aria-pressed={view === "timeline"} onClick={() => setView("timeline")}><span aria-hidden="true">↔</span> Timeline</button><button className={view === "list" ? "active" : ""} aria-pressed={view === "list"} onClick={() => setView("list")}><span aria-hidden="true">☷</span> Record list</button></div></div>
-        <div className="tools-row">
-          <label className="search-control"><span className="search-icon" aria-hidden="true" /><span className="sr-only">Search clinical records and medications</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search messages, medications, lab results…" type="search" maxLength={200} /></label>
-          {view === "timeline" && <div className="zoom-control" role="group" aria-label="Timeline zoom"><button aria-label="Zoom out" disabled={!fit && zoom <= .35} onClick={() => changeZoom(fit ? .35 : zoom - .2)}>−</button><span>{fit ? "All dates" : `${Math.round(zoom * 100)}%`}</span><button aria-label="Zoom in" disabled={!fit && zoom >= 2} onClick={() => changeZoom(fit ? .55 : zoom + .2)}>+</button><button className={fit ? "fit active" : "fit"} aria-pressed={fit} onClick={() => { setFit(!fit); }}>Fit</button></div>}
-          <button className="primary-button" disabled={!filteredEvents.length} onClick={() => selectEvent(filteredEvents[0])}><span aria-hidden="true">▷</span> Open first entry</button>
-        </div>
-        <div className="demo-pathways" role="group" aria-label="Explore demo stories"><span>Explore the demo</span>{demoHighlights.map((highlight) => <button key={highlight.query} className={query === highlight.query.toLowerCase() ? "active" : ""} aria-pressed={query === highlight.query.toLowerCase()} onClick={() => { setSearch(highlight.query); setActiveCategories(highlight.category ? [highlight.category] : categories); setView("list"); }}>{highlight.label}<span aria-hidden="true">↗</span></button>)}</div>
-        <div className="filter-row" role="group" aria-label="Filter by entry type"><span className="filter-label">Show</span>{categories.map((category) => <button key={category} className={`filter-chip ${activeCategories.includes(category) ? "active" : ""}`} aria-pressed={activeCategories.includes(category)} onClick={() => toggleCategory(category)} style={colorStyle(categoryMeta[category].color)}><CategoryDot category={category} />{categoryMeta[category].label}<span className="chip-count">{chronologicalEvents.filter((event) => event.category === category).length}</span></button>)}{isFiltered && <button className="text-button" onClick={resetFilters}>Reset filters</button>}</div>
-      </div>
-
-      <div className="timeline-status"><p aria-live="polite"><strong>{filteredEvents.length}</strong> of {events.length} entries{query && <> matching “{search}”</>}</p>{view === "timeline" ? <><span className="scroll-hint">Scroll horizontally · select a card for details</span><button className={`medication-toggle ${showMedications ? "active" : ""}`} aria-pressed={showMedications} onClick={() => setShowMedications(!showMedications)}><span aria-hidden="true">{showMedications ? "−" : "+"}</span> Medication history</button></> : <span>Chronological order</span>}</div>
-
-      {view === "timeline" ? <>
-        <nav className="month-navigation" aria-label="Jump to month"><span>Jump to</span><button onClick={() => centerDate(startTime)}>{formatDate(startTime, { month: "short", year: "numeric" })}</button>{months.map((month) => <button key={month.time} onClick={() => centerDate(month.time)}>{month.short}{new Date(month.time).getUTCMonth() === 0 ? ` ${new Date(month.time).getUTCFullYear()}` : ""}</button>)}<small className="calendar-note">Calendar dates · evenly spaced</small></nav>
-        <div className="timeline-stage">
-          <div className={`timeline-scroll-coach ${scrollHintVisible ? "visible" : ""}`} aria-hidden={!scrollHintVisible}>
-            <div className="scroll-coach-visual" aria-hidden="true"><kbd>Shift</kbd><span>+</span><i className="scroll-coach-mouse"><b /></i></div>
-            <div className="scroll-coach-copy"><strong>Move through the timeline</strong><span>Hold Shift while scrolling</span></div>
+    <section id="timeline-workspace" className="review-workspace" aria-label="Clinical timeline">
+      <div className="primary-tools"><div role="group" aria-label="Record view" className="view-tabs"><button className={view==='timeline'?'active':''} aria-pressed={view==='timeline'} onClick={()=>setView('timeline')}>Timeline</button><button className={view==='list'?'active':''} aria-pressed={view==='list'} onClick={()=>setView('list')}>Record list</button></div><label className="search-field"><svg aria-hidden="true" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><input ref={searchRef} type="search" value={search} onChange={e=>setSearch(e.target.value)} aria-label="Search clinical records and medications" placeholder="Search notes, medications, results…" maxLength={200}/><kbd aria-hidden="true">/</kbd></label><details className="shortcut-menu"><summary>Review shortcuts</summary><div>{demoHighlights.map(item=><button key={item.query} onClick={e=>{setSearch(item.query);setActive(item.category?[item.category]:categories);(e.currentTarget.closest('details') as HTMLDetailsElement).open=false;}}>{item.label}<span>↗</span></button>)}</div></details><button className={`meds-toggle ${showMeds?'active':''}`} aria-pressed={showMeds} onClick={()=>setShowMeds(!showMeds)}>Medication tracks {showMeds?'on':'off'}</button><button className="mobile-filter-toggle" aria-expanded={showFilters} onClick={()=>setShowFilters(!showFilters)}>Entry types · {active.length}/6 {showFilters?'−':'+'}</button></div>
+      <div className={`filter-tools ${showFilters?'mobile-filters-open':''}`} role="group" aria-label="Filter by entry type"><span className="tool-label">INCLUDE</span>{categories.map(category=><button key={category} aria-pressed={active.includes(category)} className={`category-filter ${active.includes(category)?'included':''}`} style={accent(trackMeta[category].color)} onClick={()=>setActive(current=>current.includes(category)?current.filter(c=>c!==category):[...current,category])}><span className="category-code">{trackMeta[category].code}</span>{trackMeta[category].label}<small>{ordered.filter(e=>e.category===category).length}</small></button>)}{filterActive&&<button className="reset-filters" onClick={resetFilters}>Reset filters</button>}</div>
+      <div className="temporal-tools"><div className="period-nav"><button aria-label="Previous period" disabled={range.start===fullRange.start} onClick={()=>pan(-1)}>←</button><button aria-label="Next period" disabled={range.end===fullRange.end} onClick={()=>pan(1)}>→</button><strong>{periodLabel}</strong><details ref={dateDisclosure} className="date-menu"><summary aria-label="Select date range">Dates</summary><div><h3>Select date range</h3><label>From<input ref={fromInput} type="date" min={patient.startDate} max={patient.endDate} value={draftStart} onChange={e=>setDraftStart(e.target.value)}/></label><label>Through<input ref={throughInput} type="date" min={patient.startDate} max={patient.endDate} value={draftEnd} onChange={e=>setDraftEnd(e.target.value)}/></label>{rangeError&&<p role="alert">{rangeError}</p>}<button className="solid-button" onClick={applyDates}>Apply range</button></div></details></div><div className="zoom-tools" role="group" aria-label="Timeline scale"><button aria-label="Zoom out" disabled={isOverview} onClick={()=>zoom(2)}>−</button><span>{isOverview?'All dates':`${Math.round((range.end-range.start)/DAY)+1} ${(range.end-range.start)<DAY?'day':'days'}`}</span><button aria-label="Zoom in" disabled={span(range)<=DAY} onClick={()=>zoom(.5)}>+</button><button onClick={()=>chooseDays(30)}>30d</button><button className={isOverview?'selected-control':''} onClick={()=>setRange(fullRange)}>Overview</button></div></div>
+      <div className="history-overview" aria-label="Full record overview"><div className="overview-label"><strong>RECORD ACTIVITY</strong><span>Jan – Jun 2026</span></div><div className="overview-body"><div className="density-plot"><div className="range-window" aria-hidden="true" style={{left:`${percent(range.start,fullRange)}%`,width:`${Math.max(.5,percent(range.end,fullRange)-percent(range.start,fullRange))}%`}}/>{overviewBins.map((bin,index)=><button key={index} aria-label={`${shortDate(bin.start)} to ${shortDate(bin.end)}: ${bin.items.length} entries. View this period.`} title={`${shortDate(bin.start)}–${shortDate(bin.end)} · ${bin.items.length} entries`} onClick={()=>focusPeriod(bin.start,bin.end,4)}><i style={{height:`${Math.max(4,bin.items.length/maxBin*100)}%`}}/><span className="sr-only">{bin.items.length}</span></button>)}</div><div className="overview-months">{calendarMonths.filter((_,index)=>index%Math.max(1,Math.ceil(calendarMonths.length/12))===0).map(month=><button key={month.start} onClick={()=>setRange({start:month.start,end:month.end})}>{month.label}</button>)}</div></div><div className="overview-control"><label htmlFor="position-slider">Pan visible period</label><input id="position-slider" type="range" aria-label="Timeline position" min={fullRange.start} max={Math.max(fullRange.start,fullRange.end-(range.end-range.start))} step={DAY} value={range.start} disabled={isOverview} onChange={e=>setRange(clampRange({start:Number(e.target.value),end:Number(e.target.value)+(range.end-range.start)}))}/></div></div>
+      <div className="review-status"><p aria-live="polite"><strong>{inRange.length}</strong> entries in view <span> / {matches.length} matching of {events.length}</span>{filterActive&&<b className="filter-status">Filtered{query?` · “${query}”`:''}</b>}</p><div><button onClick={()=>{resetFilters();focusPeriod(stamp('2026-03-12'),stamp('2026-03-14'),7);selectEvent(ordered.find(e=>e.id==='mar12-ed')!);}}>Admission ± 7 days ↗</button><span>Event bars connect record dates · linear scale</span></div></div>
+      <div className={`workspace-body ${selection?'has-selection':''}`}>
+        <div className="chronology-column" ref={chartRef}>
+          <div className={`timeline-chart ${view==='list'?'hidden-view':''}`} role="region" aria-label="Timeline tracks. Use left and right arrow keys to pan." tabIndex={0} onKeyDown={e=>{if(e.target!==e.currentTarget)return;if(e.key==='ArrowLeft'||e.key==='ArrowRight'){e.preventDefault();pan(e.key==='ArrowLeft'?-1:1);}if(e.key==='Home'){e.preventDefault();setRange(fullRange);}}} onWheel={e=>{if(e.shiftKey&&Math.abs(e.deltaY)>0)setRange(current=>panRange(current,Math.sign(e.deltaY)*Math.max(DAY,span(current)/10)));}}>
+            <div className="date-ruler"><div className="axis-label">RECORD / EVIDENCE</div><div className="ruler-plot"><span className="first-tick">{shortDate(range.start)}</span>{ticks.map(time=><span key={time} style={{left:`${percent(time,range)}%`}}>{formatDate(time,span(range)>70*DAY?{month:'short'}:{month:'short',day:'numeric'})}</span>)}<span className="last-tick">{shortDate(range.end)}</span></div></div>
+            {trackGroups.map(({category,groups})=><div key={category} className={`clinical-track ${active.includes(category)?'':'excluded-track'}`} style={accent(trackMeta[category].color)}><div className="track-heading"><span className="track-symbol">{trackMeta[category].code}</span><div><strong>{trackMeta[category].label}</strong><small>{active.includes(category)?`${groups.reduce((n,g)=>n+g.items.length,0)} in view`:'Hidden by filter'}</small></div></div><div className="track-plot">{ticks.map(time=><span className="grid-line" key={time} style={{left:`${percent(time,range)}%`}}/>)}{selectedEvent&&stamp(selectedEvent.date)>=range.start&&stamp(selectedEvent.date)<=range.end&&<span className="selection-line" style={{left:`${percent(stamp(selectedEvent.date),range)}%`}}/>}{groups.map(group=>{const count=group.items.length;const first=group.items[0];const selected=!!selectedEvent&&group.items.some(item=>item.id===selectedEvent.id);const x=percent(group.start,range);const bucketCount=Math.max(1,Math.floor(plotWidth/110));const bucketIndex=Math.min(bucketCount-1,Math.floor((group.start-range.start)/(span(range)+DAY)*bucketCount));const width=plotWidth/bucketCount-7;const left=bucketIndex*plotWidth/bucketCount;return <button key={first.id} className={`event-mark ${count>1?'cluster-mark':''} ${selected?'selected-mark':''}`} style={{left,width}} title={`${shortDate(group.start)}${group.end!==group.start?` – ${shortDate(group.end)}`:''}: ${group.items.map(item=>item.title).join(' · ')}`} aria-label={count>1?`${count} ${trackMeta[category].label} entries, ${shortDate(group.start)} to ${shortDate(group.end)}`:`${shortDate(first.date)}: ${first.title}`} aria-pressed={selected} onClick={()=>count>1?select({kind:'cluster',group}):selectEvent(first)}><span className="event-extent" aria-hidden="true" style={{left:Math.max(0,x/100*plotWidth-left),width:Math.max(3,(percent(group.end,range)-x)/100*plotWidth)}}/><span className="event-label"><b>{count>1?`${count} entries`:shortDate(first.date)}</b><span>{titleText(first)}</span></span></button>;})}{!groups.length&&<span className="track-empty">{active.includes(category)?'No included records in this period':'Track excluded'}</span>}</div></div>)}
+            {!inRange.length&&<div className="empty-state"><h3>{matches.length?'No matches in this period':'No matching records'}</h3><p>{matches.length?'Matches exist elsewhere in the record.':'Try a different search or restore the entry categories.'}</p><button onClick={()=>matches.length?setRange(fullRange):resetFilters()}>{matches.length?'Show all dates':'Reset filters'}</button></div>}
+            <div className="medication-section-heading"><div><h3>Medication evidence</h3><span>Separate from medication-event filters</span></div><button onClick={()=>setShowMeds(!showMeds)} aria-expanded={showMeds}>{showMeds?'Collapse':'Show'} {medicationMatches.length} tracks</button></div>
+            {showMeds&&<><div className="medication-key"><span><i className="order-key"/>Order / prescription</span><span><i className="report-key"/>Patient report</span><span><i className="admin-key"/>Administration</span><span><i className="plan-key"/>Plan / instruction</span></div>{medicationMatches.map(med=>{const segments=med.segments.map((segment,index)=>({segment,index,start:stamp(segment.start),end:stamp(segment.end??segment.start)})).filter(item=>item.end>=range.start&&item.start<=range.end);return <div className="medication-track" key={med.name}><button className={`medication-name ${selection?.kind==='medication'&&selection.medication.name===med.name?'selected-med':''}`} onClick={()=>select({kind:'medication',medication:med})}><strong>{med.name}</strong><span>{med.className}</span></button><div className="medication-plot">{ticks.map(time=><span className="grid-line" key={time} style={{left:`${percent(time,range)}%`}}/>)}{selectedEvent&&stamp(selectedEvent.date)>=range.start&&stamp(selectedEvent.date)<=range.end&&<span className="selection-line" style={{left:`${percent(stamp(selectedEvent.date),range)}%`}}/>}{segments.map(({segment,index,start,end})=>{const x=percent(start,range);const w=percent(end,range)-x;const row=segment.status==='prescribed'||segment.status==='inpatient'?0:segment.status==='reported'?1:2;const evidence=medicationEvidence(segment);return <button key={index} className={`medication-span ${segment.status} ${start===end?'point-evidence':''} ${segment.end===patient.endDate?'record-boundary':''}`} style={{left:`${x}%`,width:start===end?14:`${Math.max(.35,w)}%`,top:7+row*25}} title={`${evidence.label}: ${segment.label} · ${shortDate(start)}${end!==start?` – ${shortDate(end)}`:''}`} aria-label={`${med.name}: ${segment.label}. ${evidence.label}. ${formatDate(start)}${end!==start?` through ${formatDate(end)}`:''}`} onClick={()=>select({kind:'medication',medication:med,index})}><span>{start===end?evidence.symbol:segment.label}</span></button>;})}{!segments.length&&<span className="track-empty">No included evidence in this period</span>}</div></div>;})}{!medicationMatches.length&&<p className="empty-medications">No medication histories match this search.</p>}<p className="medication-boundary-note">Bars show recorded intervals, not verified continuous use. Fills are described only where recorded in the source narrative. A bar at the record boundary does not establish discontinuation.</p></>}
           </div>
-        <div className="timeline-scroll" ref={viewportRef} tabIndex={0} role="region" aria-label="Scrollable clinical timeline. Hold Shift while scrolling, or use left and right arrow keys." onScroll={(event) => { const left = event.currentTarget.scrollLeft; if (left !== scrollLeft) setShowScrollHint(false); setScrollLeft(left); }} onKeyDown={(event) => { if (event.target !== event.currentTarget) return; if (event.key === "ArrowRight" || event.key === "ArrowLeft") { event.preventDefault(); event.currentTarget.scrollBy({ left: event.key === "ArrowRight" ? 320 : -320 }); } if (event.key === "Home" || event.key === "End") { event.preventDefault(); event.currentTarget.scrollTo({ left: event.key === "Home" ? 0 : canvasWidth }); } }}>
-          <div className="timeline-canvas" style={{ width: canvasWidth }}>
-            <div className="time-ruler"><span className="range-start">{formatDate(startTime, { month: "short", day: "numeric" })}</span>{months.filter((_, index) => !fit || index % Math.max(1, Math.ceil(months.length / Math.max(1, Math.floor((canvasWidth - 224) / 105)))) === 0).map((month) => <div className="tick" key={month.time} style={{ left: position(month.time, canvasWidth) }}><span>{fit ? month.short : month.label}</span></div>)}<span className="range-end">{formatDate(endTime, { month: "short", day: "numeric" })}</span></div>
-            <div className="event-field" style={{ height: layout.height }}>
-              {months.map((month) => <div className="month-guide" key={month.time} style={{ left: position(month.time, canvasWidth) }} />)}
-              <div className="main-axis" style={{ top: layout.axis }} />
-              {layout.cards.map((card) => {
-                const first = card.items[0];
-                const last = card.items.at(-1)!;
-                const cluster = card.items.length > 1;
-                const datesDiffer = first.date.slice(0, 10) !== last.date.slice(0, 10);
-                const topSide = card.top < layout.axis;
-                const connectorTop = topSide ? card.top + CARD_HEIGHT : layout.axis + 2;
-                return <div className="event-anchor" key={card.id} style={colorStyle(card.color)}><div className="connector" style={{ left: card.x, top: connectorTop, height: topSide ? layout.axis - connectorTop : card.top - connectorTop }} /><i className="axis-dot" style={{ left: card.x, top: layout.axis }} /><button className={`event-card ${cluster ? "cluster-card" : ""}`} style={{ left: card.left, top: card.top, width: CARD_WIDTH, height: CARD_HEIGHT }} aria-label={cluster ? `${card.items.length} entries, ${first.displayDate}${datesDiffer ? ` through ${last.displayDate}` : ""}` : `${first.displayDate}: ${first.title}`} onClick={() => cluster ? setSelection({ kind: "cluster", items: card.items }) : selectEvent(first)}><span className="card-date">{cluster ? `${formatDate(first.date, { month: "short", day: "numeric" })}${datesDiffer ? ` – ${formatDate(last.date, { month: "short", day: "numeric" })}` : ""}` : first.displayDate}</span><strong>{cluster ? `${card.items.length} clinical entries` : first.title}</strong>{cluster ? <span className="cluster-kinds">{[...new Set(card.items.map((item) => item.category))].map((category) => <CategoryDot category={category} key={category} />)}<span>Open entries <b aria-hidden="true">↗</b></span></span> : <span className="card-category">{categoryMeta[first.category].label}</span>}</button></div>;
-              })}
-              {!filteredEvents.length && <div className="empty-state" style={{ left: scrollLeft + viewportWidth / 2 }}><strong>No matching entries.</strong><button className="text-button" onClick={resetFilters}>Reset filters</button></div>}
-            </div>
-            {showMedications && <section className="medication-field" aria-label="Medication history"><div className="medication-heading" style={{ width: viewportWidth }}><div><h3>Medication history</h3></div><span>Select a dose for details</span></div>
-              <div className="medication-legend" style={{ width: viewportWidth }}><span><i className="prescribed" />Prescribed / filled</span><span><i className="reported" />Reported use</span><span><i className="planned" />Planned</span><span><i className="inpatient" />Inpatient</span></div>
-              {filteredMedications.map((medication) => {
-                const packed = medicationLayout(medication, canvasWidth);
-                const stacked = fit && canvasWidth < 700;
-                const headerHeight = stacked ? 56 : 0;
-                return <div className={`medication-row ${stacked ? "stacked" : ""}`} style={{ height: packed.height + headerHeight, ...colorStyle(medication.color) }} key={medication.name}>
-                  <button className="medication-name" onClick={() => setSelection({ kind: "medication", medication })}><strong>{medication.name}</strong><span>{medication.generic}</span></button>
-                  {packed.segments.map(({ segment, index, left, right, labelLeft, labelWidth, top }) => <span key={index}>
-                    <span aria-hidden="true" className={`${segment.end ? "medication-duration" : "medication-point"} ${segment.status}`} style={{ left, width: segment.end ? Math.max(0, right - left) : 7, top: top + headerHeight + 42 }} />
-                    <button className={`medication-segment ${segment.status}`} style={{ left: labelLeft, width: labelWidth, top: top + headerHeight }} aria-label={`${medication.name}, ${segment.label}, ${segment.status}, ${formatDate(segment.start)}${segment.end ? ` through ${formatDate(segment.end)}` : ""}`} title={`${medication.name} · ${segment.label} · ${segment.status}`} onClick={() => setSelection({ kind: "medication", medication, segmentIndex: index })}>{segment.label}</button>
-                  </span>)}
-                </div>;
-              })}
-              {!filteredMedications.length && <p className="medication-empty" style={{ width: viewportWidth }}>No matching medications.</p>}
-              <p className="medication-footnote" style={{ width: viewportWidth }}>Lines show date ranges; dots mark single dates. Label width does not indicate duration. Prescriptions and treatment plans do not confirm use.</p>
-            </section>}
-          </div>
+          <div className={`chronology-ledger ${view==='timeline'?'hidden-view':''}`}><div className="ledger-heading"><span>DATE / TYPE</span><span>RECORD SUMMARY</span><span>AUTHOR</span></div>{inRange.map(event=><button key={event.id} className={`ledger-entry ${selectedEvent?.id===event.id?'selected-entry':''}`} onClick={()=>selectEvent(event)}><div><time>{shortDate(event.date)}</time><span style={accent(trackMeta[event.category].color)}><b>{trackMeta[event.category].code}</b>{trackMeta[event.category].label}</span></div><div><strong>{event.title}</strong><p>{event.short}</p></div><span className="ledger-author">{event.clinician}</span></button>)}{!inRange.length&&<div className="empty-state"><h3>No matching records in this period</h3><button onClick={()=>{resetFilters();setRange(fullRange);}}>Restore full record</button></div>}{showMeds&&<section className="ledger-medications"><h3>Medication histories <span>{medicationMatches.length}</span></h3>{medicationMatches.map(med=><button key={med.name} onClick={()=>select({kind:'medication',medication:med})}><strong>{med.name}</strong><span>{med.segments.length} evidence entries ↗</span></button>)}</section>}</div>
         </div>
-        </div>
-        <div className="overview-control"><label htmlFor="timeline-position">Timeline position</label><input id="timeline-position" type="range" min={0} max={Math.max(1, maxScroll)} step={1} value={Math.min(scrollLeft, maxScroll)} disabled={maxScroll === 0} onChange={(event) => { if (viewportRef.current) viewportRef.current.scrollLeft = Number(event.target.value); }} /><span>{fit ? "All dates shown" : "Scroll timeline"}</span></div>
-      </> : <div className="record-list">{filteredEvents.length ? filteredEvents.map((event, index) => <div className="record-row" key={event.id} style={colorStyle(categoryMeta[event.category].color)}>{(index === 0 || event.date.slice(0, 7) !== filteredEvents[index - 1].date.slice(0, 7)) && <h3 className="record-month">{formatDate(event.date, { month: "long", year: "numeric" })}</h3>}<button className="record-button" onClick={() => selectEvent(event)}><time dateTime={event.date}>{event.displayDate}</time><CategoryDot category={event.category} /><div><span className="record-type">{categoryMeta[event.category].label}{event.clinician ? ` · ${event.clinician}` : ""}</span><strong>{event.title}</strong><p>{event.short}</p></div><span className="record-arrow" aria-hidden="true">↗</span></button></div>) : <div className="list-empty"><h3>No matching entries.</h3><button className="text-button" onClick={resetFilters}>Reset filters</button></div>}</div>}
-    </section>
-
-    <footer className="demo-footer"><strong>Fictional records. Real workflow complexity.</strong><span>All people, messages, encounters and results are invented for this demo. No live EHR connection.</span></footer>
-
-    <dialog className="detail-dialog" ref={dialogRef} onCancel={() => setSelection(null)} onClose={() => setSelection(null)} onClick={(event) => { if (event.target === event.currentTarget) setSelection(null); }} onKeyDown={(event) => { const target = event.target as HTMLElement; if (target.closest("input, textarea, select, [contenteditable=true]")) return; if (selection?.kind === "event" && (event.key === "ArrowLeft" || event.key === "ArrowRight")) { event.preventDefault(); stepEvent(event.key === "ArrowRight" ? 1 : -1); } }} aria-labelledby="detail-title">
-      <div className="drawer-content" onClick={(event) => event.stopPropagation()}>
-        <div className="drawer-top"><span className="eyebrow">{selection?.kind === "medication" ? "Medication detail" : selection?.kind === "cluster" ? "Entries in this period" : "Clinical entry"}</span><button className="close-button" aria-label="Close details" onClick={() => setSelection(null)} autoFocus>×</button></div>
-        {selection?.kind === "event" && <><div className="detail-category" style={colorStyle(categoryMeta[selection.event.category].color)}><CategoryDot category={selection.event.category} />{categoryMeta[selection.event.category].label}</div><time className="detail-date" dateTime={selection.event.date}>{selection.event.displayDate}</time><h2 id="detail-title">{selection.event.title}</h2><p className="detail-summary">{selection.event.summary}</p>{(selection.event.clinician || selection.event.institution) && <dl className="care-team">{selection.event.clinician && <div><dt>Documented by</dt><dd>{selection.event.clinician}</dd></div>}{selection.event.institution && <div><dt>Care setting</dt><dd>{selection.event.institution}</dd></div>}</dl>}<EntryDetails event={selection.event} />{selection.event.medication && <div className="detail-medication"><span className="eyebrow">Medications</span><p>{selection.event.medication}</p></div>}{selection.event.caution && <div className="record-note"><strong>Record note</strong><p>{selection.event.caution}</p></div>}<div className="entry-provenance"><span className="eyebrow">Record type · synthetic demo</span><p>{selection.event.recordType}</p></div><div className="drawer-navigation"><button onClick={() => stepEvent(-1)} disabled={activeIndex <= 0}>← Previous</button><span>{activeIndex >= 0 ? `${activeIndex + 1} / ${filteredEvents.length}` : "Selected entry"}</span><button onClick={() => stepEvent(1)} disabled={activeIndex < 0 || activeIndex >= filteredEvents.length - 1}>Next →</button></div></>}
-        {selection?.kind === "cluster" && <><h2 id="detail-title">{selection.items.length} clinical entries</h2><p className="detail-summary">{formatDate(selection.items[0].date)}{selection.items[0].date.slice(0, 10) !== selection.items.at(-1)!.date.slice(0, 10) ? ` – ${formatDate(selection.items.at(-1)!.date)}` : ""}</p><p className="cluster-explanation">Entries are grouped at this zoom level.</p><div className="cluster-entry-list">{selection.items.map((event) => <button key={event.id} onClick={() => selectEvent(event)} style={colorStyle(categoryMeta[event.category].color)}><span className="cluster-entry-meta"><CategoryDot category={event.category} />{event.displayDate} · {categoryMeta[event.category].label}</span><strong>{event.title}</strong><p>{event.short}</p><span className="cluster-entry-open">Open entry →</span></button>)}</div></>}
-        {selection?.kind === "medication" && <><div className="detail-category" style={colorStyle(selection.medication.color)}><i className="category-dot" aria-hidden="true" />Medication history</div><h2 id="detail-title">{selection.medication.name}</h2><p className="generic-name">{selection.medication.generic}</p><p className="detail-summary">{selection.medication.summary}</p><div className="medication-detail-list">{selection.medication.segments.map((segment, index) => <article className={selection.segmentIndex === index ? "selected" : ""} key={index}><span className={`status-badge ${segment.status}`}>{segment.status === "reported" ? "Reported use" : segment.status}</span><time>{formatDate(segment.start)}{segment.end && segment.end !== segment.start ? ` – ${formatDate(segment.end)}` : ""}</time><h3>{segment.label}</h3><p>{segment.note}</p></article>)}</div><p className="entry-provenance">Entries do not confirm continuous medication use between dates.</p></>}
+        <aside ref={inspectorRef} className={`record-inspector ${selection?'inspector-open':''}`} aria-label="Record inspector" onKeyDown={e=>{if(e.target instanceof HTMLElement&&e.target.closest('input,textarea,select'))return;if(selection?.kind==='event'&&(e.key==='ArrowLeft'||e.key==='ArrowRight')){e.preventDefault();stepEvent(e.key==='ArrowLeft'?-1:1);}}}>
+          <div className="inspector-top"><span>{selection?.kind==='medication'?'MEDICATION EVIDENCE':selection?.kind==='cluster'?'GROUPED RECORDS':selection?'RECORD INSPECTOR':'CHART ORIENTATION'}</span>{selection&&<button onClick={closeInspector} aria-label="Close details">×</button>}</div>
+          {!selection&&<div className="orientation"><h2>Six months,<br/>one clinical record.</h2><p>{patient.summary}</p><h3>Start with a documented event</h3>{orientationIds.map(id=>ordered.find(event=>event.id===id)!).map(event=><button key={event.id} onClick={()=>selectEvent(event,true)}><time>{shortDate(event.date)}</time><strong>{event.title}</strong><span>{event.short} ↗</span></button>)}<div className="reading-key"><h3>Reading the timeline</h3><p>Each row shares the same date axis. Event bars span grouped record dates; they do not indicate continuous care. Numbered groups contain every included record in that interval.</p><p>Select a record to inspect its summary and complete fictional source narrative here.</p><p>Medication patterns distinguish the evidence; temporal proximity alone does not imply causation.</p></div></div>}
+          {selection?.kind==='event'&&<div className="inspector-content"><div className="record-category" style={accent(trackMeta[selection.event.category].color)}><b>{trackMeta[selection.event.category].code}</b>{trackMeta[selection.event.category].label}<time>{formatDate(selection.event.date)}</time></div><h2 tabIndex={-1} ref={inspectorHeading}>{selection.event.title}</h2><div className="detail-navigation"><button disabled={selectedIndex<=0} onClick={()=>stepEvent(-1)}>← Previous</button><span>{selectedIndex>=0?`${selectedIndex+1} / ${matches.length}`:'Outside active filters'}</span><button disabled={selectedIndex<0||selectedIndex>=matches.length-1} onClick={()=>stepEvent(1)}>Next →</button></div><section className="summary-section"><h3>CLINICAL SUMMARY</h3><p>{selection.event.summary}</p></section><dl className="record-metadata"><div><dt>Documented by</dt><dd>{selection.event.clinician??'Not provided'}</dd></div><div><dt>Care setting</dt><dd>{selection.event.institution??'Not provided'}</dd></div></dl>{selection.event.caution&&<div className="caution-note">{selection.event.caution}</div>}<details className="source-disclosure" open><summary>{selection.event.category==='message'?'MyChart conversation':selection.event.category==='telephone'?'Telephone documentation':'Source narrative'}<span>Synthetic record</span></summary><SourceNarrative event={selection.event}/></details>{selection.event.medication&&<section className="associated-medications"><h3>Recorded medications</h3><p>{selection.event.medication}</p>{medications.filter(med=>relatedMedicationEvents(med).some(e=>e.id===selection.event.id)).map(med=><button key={med.name} onClick={()=>select({kind:'medication',medication:med})}>{med.name} ↗</button>)}</section>}<details className="provenance"><summary>Provenance & date precision</summary><dl><div><dt>Record type</dt><dd>{selection.event.recordType}</dd></div><div><dt>Internal record ID</dt><dd><code>{selection.event.id}</code></dd></div><div><dt>Recorded calendar date</dt><dd>{formatDate(selection.event.date)} · day precision</dd></div></dl><p>Separate occurrence, authored and signed timestamps are not provided. The text above is the complete fictional source narrative; no external chart document is attached.</p></details><button className="context-button" onClick={()=>focusPeriod(stamp(selection.event.date),stamp(selection.event.date),7)}>View 7 days before and after ↗</button><div className="hospital-step"><span>Hospital events</span><button disabled={!hospitalTarget(-1)} onClick={()=>stepHospital(-1)}>← Previous</button><button disabled={!hospitalTarget(1)} onClick={()=>stepHospital(1)}>Next →</button></div></div>}
+          {selection?.kind==='cluster'&&<div className="inspector-content"><h2 tabIndex={-1} ref={inspectorHeading}>{selection.group.items.length} records in this interval</h2><p className="inspector-dates">{formatDate(selection.group.start)} – {formatDate(selection.group.end)}</p><p className="source-note">Grouped to keep the overview readable. All records are listed below.</p><button className="context-button" onClick={()=>focusPeriod(selection.group.start,selection.group.end,2)}>Expand this period ↗</button><div className="cluster-records">{selection.group.items.map(event=><button key={event.id} onClick={()=>selectEvent(event)}><time>{shortDate(event.date)}</time><strong>{event.title}</strong><span>{event.short}</span></button>)}</div></div>}
+          {selection?.kind==='medication'&&<div className="inspector-content"><h2 tabIndex={-1} ref={inspectorHeading}>{selection.medication.name}</h2><p className="generic-name">{selection.medication.generic}</p><p className="medication-summary">{selection.medication.summary}</p><p className="source-note">Recorded evidence below. An order or a fill does not establish that a medicine was taken.</p>{medicationContent(selection.medication)}<details className="related-mentions"><summary>Related record mentions ({relatedMedicationEvents(selection.medication).length})</summary>{relatedMedicationEvents(selection.medication).map(event=><button key={event.id} onClick={()=>selectEvent(event,true)}><time>{shortDate(event.date)}</time><span>{event.title}</span></button>)}</details><p className="source-note">Source: fictional medication narrative. No independent administration or dispensing feed is connected.</p></div>}
+        </aside>
       </div>
-    </dialog>
+      <footer className="workspace-footer"><span>FICTIONAL PATIENT · DEMONSTRATION ONLY</span><span>Calendar dates are not interchangeable with documentation timestamps.</span><button onClick={()=>window.print()}>Print current view</button></footer>
+    </section>
   </main>;
 }
