@@ -51,7 +51,8 @@ Use standard encounter names, clinical topics and factual summaries. Avoid sloga
 ## Timeline and evidence conventions
 
 - All tracks use a linear calendar scale. The activity overview marks the displayed window within the complete record.
-- Bounded calendar groups show their record count and reveal every member. Grouping changes presentation, not source dates or record membership.
+- Bounded groups are formed from the full track before clipping to the date window. Their anchors and membership remain stable while panning; zooming can regroup records when the number of days per label changes. Captions and markers share a date position, with only edge labels tucked inside the plot. Groups show their record count and reveal every member. Source dates remain unchanged.
+- Each of the 94 records has a short timeline caption. Full record titles, summaries and narratives remain available in the inspector; caption wording does not alter source data.
 - Search and category changes retain the date window. Visible counts distinguish records in view, matching records, and total records.
 - The inspector separates the clinical summary from the complete fictional source narrative. Provenance exposes the internal record ID and calendar-day precision; missing occurrence/authored/signed timestamps remain explicitly unavailable.
 - Medication evidence uses solid order bands, patterned administration bands, and dotted plan/instruction bands. Patient reports appear only in the inspector. Explicit stop instructions use red X end caps aligned with the dose row, joined to a same-day or preceding-day dose interval when one exists. Stops without a displayed dose remain standalone rectangular caps; gaps are never bridged. Other single-date instructions remain points. A marked record boundary is not a stop date.
@@ -59,7 +60,7 @@ Use standard encounter names, clinical topics and factual summaries. Avoid sloga
 
 ## Interaction and responsive behavior
 
-The inspector starts collapsed. Selecting a group, record, or medication opens it. On larger screens it shares the workspace with the timeline; collapsing returns that width to the chart and preserves the selection. A persistent arrow on the inspector’s left rail collapses it toward the right edge. Below the side-panel breakpoint it opens as a right-side drawer; at phone widths the ledger becomes the primary record view. Core records, search, filters, medication history, and source reading remain available.
+The inspector starts collapsed. Selecting a group, record, or medication opens it. It overlays the timeline at every screen size, preserving the chart scale when opened or resized. Collapsing preserves the selection and chosen width. A persistent arrow on the inspector’s left rail collapses it toward the right edge. The rail below that arrow is draggable, with pointer capture, a visible grip, keyboard Left/Right resizing, Home/End limits, and double-click reset. Width is bounded by the available workspace and a 960-pixel maximum. At phone widths the ledger becomes the primary record view. Core records, search, filters, medication history, and source reading remain available.
 
 The blue overview window is the primary date-range control. Pointer capture supports dragging its body and either edge without losing the gesture outside the handle. Moving retains duration; resizing fixes the opposite edge. Values snap to calendar days and cannot cross or exceed the record boundary. Each part has a keyboard-accessible slider role and announces its dates. Native buttons, disclosures, inputs, and the exact-date form provide alternate controls. Selected and excluded states are explicit. The timeline supports keyboard panning and overview restoration; the inspector supports previous/next records, Escape, heading focus, and focus return. Empty states distinguish a period with no matches from a query with no matches anywhere.
 
@@ -71,7 +72,7 @@ Motion is limited to brief state feedback. Reduced-motion styling removes animat
 
 Require meaningful control names, visible keyboard focus, semantic regions, redundant category/evidence cues, and usable disclosure and empty states. Review contrast, text scaling, clipped content, keyboard order, focus recovery, and touch operation in the rendered application. A resized screenshot proves layout, not touch behavior. Keep viewport and physical-device evidence distinct.
 
-The project has 25 automated data/model/build-boundary tests. Visual, browser, print, offline, and assistive-technology checks are separate work; this document does not assert complete WCAG conformance, clinical validation, or production readiness.
+The project has 29 automated data/model/build-boundary tests. Visual, browser, print, offline, and assistive-technology checks are separate work; this document does not assert complete WCAG conformance, clinical validation, or production readiness.
 
 ## Free resources actually used
 

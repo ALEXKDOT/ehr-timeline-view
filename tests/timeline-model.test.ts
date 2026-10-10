@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import test from "node:test";
 import { events, medications, patient, categoryMeta, type Category, type TimelineEvent } from "../app/clinical-data.ts";
 import { DAY, stamp, isoDate, formatDate, fullRange, clampRange, zoomRange, panRange, adjustOverviewRange,
-  filterEvents, groupEvents, medicationEvidence, medicationTimelineItems, relatedMedicationEvents } from "../app/timeline-model.ts";
+  filterEvents, groupEvents, layoutEventGroups, inspectorWidthBounds, resizeInspectorWidth, medicationEvidence, medicationTimelineItems, relatedMedicationEvents } from "../app/timeline-model.ts";
 
 const categories = Object.keys(categoryMeta) as Category[];
 
@@ -109,7 +109,7 @@ test("dense March clusters preserve every same-day record and inclusive date bou
   assert.ok(groups.flatMap((group) => group.items).some((event) => event.id === "mar14-reconciliation"));
 });
 
-test("clustering uses bounded calendar buckets rather than chaining neighboring records", () => {
+test("clustering uses bounded intervals rather than chaining neighboring records", () => {
   const items: TimelineEvent[] = [0, 2, 4, 6, 8, 10].map((offset) => ({
     ...events[0], id: `synthetic-layout-fixture-${offset}`, date: isoDate(stamp("2026-01-05") + offset * DAY),
   }));
@@ -207,4 +207,49 @@ test("stop caps do not extend dosing across an unrecorded gap or turn other plan
   assert.ok(plans.every(item => medicationEvidence(item.segment).label !== "Stop instruction"));
   const ongoing = medications.flatMap(medicationTimelineItems).filter(item => item.segment.end === patient.endDate);
   assert.ok(ongoing.every(item => item.kind === "dose" && item.plotEnd === item.end));
+});
+
+
+test("panning preserves the membership of interior groups", () => {
+  const initial = { start: stamp("2026-03-01"), end: stamp("2026-03-31") };
+  for (const category of categories) {
+    const source = events.filter(event => event.category === category);
+    const before = groupEvents(source, initial, 700, 110);
+    for (const days of [1, 2, 3, 4, 5]) {
+      const moved = { start: initial.start + days * DAY, end: initial.end + days * DAY };
+      const after = groupEvents(source, moved, 700, 110);
+      for (const group of before.filter(group => group.start > moved.start && group.end < initial.end)) {
+        assert.deepEqual(after.find(item => item.items.includes(group.items[0]))?.items, group.items);
+      }
+    }
+  }
+});
+
+test("captions and markers share dates, remain inside the plot and do not overlap captions", () => {
+  const ranges = [fullRange, { start: stamp("2026-03-01"), end: stamp("2026-03-31") },
+    { start: stamp("2026-03-14"), end: stamp("2026-03-14") }];
+  for (const range of ranges) for (const width of [500, 1046]) for (const category of categories) {
+    const groups = groupEvents(events.filter(event => event.category === category), range, width, 110);
+    const layout = layoutEventGroups(groups, range, width);
+    layout.forEach((item, index) => {
+      const expected = (item.group.start - range.start) / Math.max(DAY, range.end - range.start) * width;
+      assert.ok(Math.abs(item.left + item.markerOffset - expected) <= 3);
+      assert.ok(item.left >= 0 && item.labelWidth >= 0);
+      assert.ok(item.left + item.width <= width + 0.001);
+      if (layout[index + 1]) assert.ok(item.left + item.labelWidth <= layout[index + 1].left);
+    });
+  }
+});
+
+test("inspector resizing is bounded by the workspace and supports expansion, narrowing and recovery", () => {
+  assert.equal(resizeInspectorWidth(348, 240, 1200), 588);
+  assert.equal(resizeInspectorWidth(588, -100, 1200), 488);
+  assert.equal(resizeInspectorWidth(348, 10000, 1200), 960);
+  assert.equal(resizeInspectorWidth(348, -10000, 1200), 280);
+  assert.equal(resizeInspectorWidth(800, 0, 600), 552);
+  assert.equal(resizeInspectorWidth(800, 0, 319), 319);
+  for (const workspace of [240, 319, 768, 1200, 2000]) {
+    const bounds = inspectorWidthBounds(workspace);
+    assert.ok(bounds.min <= bounds.max && bounds.max <= workspace);
+  }
 });

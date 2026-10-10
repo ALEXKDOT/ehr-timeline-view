@@ -74,27 +74,62 @@ export function filterEvents(items: readonly TimelineEvent[], query: string, cat
 }
 
 /**
- * Fixed buckets are anchored to the displayed range, never chained from neighboring events.
- * Range bounds include their calendar days; partial-day zoom boundaries therefore cannot
- * silently remove a day-precision source record. No records or source objects are modified.
+ * Form bounded groups from the complete track before clipping to the view. Their
+ * anchors stay fixed while panning; only changes in date density regroup records.
+ * Calendar-day bounds include every source record on the first and last day.
  */
 export function groupEvents(items: readonly TimelineEvent[], range: Range, width: number, minGap = 100): EventGroup[] {
   if (!Number.isFinite(range.start) || !Number.isFinite(range.end)) return [];
   const start = Math.floor(Math.min(range.start, range.end) / DAY) * DAY;
   const end = Math.floor(Math.max(range.start, range.end) / DAY) * DAY;
-  const span = end - start + DAY;
-  const bucketCount = Math.max(1, Math.floor((Number.isFinite(width) ? Math.max(0, width) : 0) / Math.max(1, minGap)));
-  const buckets = new Map<number, EventGroup>();
+  const slots = Math.max(1, Math.floor((Number.isFinite(width) ? Math.max(0, width) : 0) / Math.max(1, minGap)));
+  const groupSpan = Math.max(DAY, Math.ceil((end - start + DAY) / slots / DAY) * DAY);
+  const groups: EventGroup[] = [];
   const sorted = items.map((event, index) => ({ event, index, time: stamp(event.date) }))
-    .filter(({ time }) => Number.isFinite(time) && time >= start && time <= end)
+    .filter(({ time }) => Number.isFinite(time))
     .sort((a, b) => a.time - b.time || a.index - b.index);
   for (const { event, time } of sorted) {
-    const key = Math.min(bucketCount - 1, Math.floor(((time - start) / span) * bucketCount));
-    const group = buckets.get(key);
-    if (group) { group.items.push(event); group.end = time; }
-    else buckets.set(key, { items: [event], start: time, end: time });
+    const previous = groups.at(-1);
+    if (previous && time - previous.start < groupSpan) { previous.items.push(event); previous.end = time; }
+    else groups.push({ items: [event], start: time, end: time });
   }
-  return [...buckets.values()];
+  return groups.flatMap(group => {
+    const visible = group.items.filter(event => stamp(event.date) >= start && stamp(event.date) <= end);
+    return visible.length ? [{ items: visible, start: stamp(visible[0].date), end: stamp(visible.at(-1)!.date) }] : [];
+  });
+}
+
+/** Caption and marker share a date anchor; only edge labels tuck inside the plot. */
+export function layoutEventGroups(groups: readonly EventGroup[], range: Range, width: number) {
+  const plotWidth = Math.max(3, width);
+  const duration = Math.max(DAY, range.end - range.start);
+  const position = (time: number) => Math.max(0, Math.min(plotWidth, (time - range.start) / duration * plotWidth));
+  const anchors = groups.map(group => ({ group, x: position(group.start), end: position(group.end) }));
+  const labels = anchors.map((item, index) => {
+    const previous = anchors[index - 1];
+    // Retain a readable label at the right boundary without crossing its neighbor.
+    return Math.min(item.x, Math.max(previous ? (previous.x + item.x) / 2 : 0, plotWidth - 110));
+  });
+  return anchors.map(({ group, x, end }, index) => {
+    const left = labels[index];
+    const labelWidth = Math.max(0, Math.min(160, (labels[index + 1] ?? plotWidth + 6) - left - 6));
+    const markerLeft = Math.min(x, plotWidth - 3);
+    const markerWidth = Math.min(plotWidth - markerLeft, Math.max(3, end - x));
+    return { group, left, width: Math.max(labelWidth, markerLeft - left + markerWidth),
+      labelWidth, markerOffset: markerLeft - left, markerWidth };
+  });
+}
+
+export function inspectorWidthBounds(workspaceWidth: number) {
+  const available = Math.max(0, Number.isFinite(workspaceWidth) ? workspaceWidth : 348);
+  const max = Math.min(960, available < 480 ? available : available - 48);
+  return { min: Math.min(280, max), max };
+}
+
+export function resizeInspectorWidth(width: number, delta: number, workspaceWidth: number) {
+  const bounds = inspectorWidthBounds(workspaceWidth);
+  const next = Number.isFinite(width + delta) ? width + delta : 348;
+  return Math.round(Math.max(bounds.min, Math.min(bounds.max, next)));
 }
 
 export function medicationEvidence(segment: MedicationSegment): { label: string; symbol: string; description: string } {

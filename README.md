@@ -30,8 +30,11 @@ The **Record list** provides a chronological ledger with dates, categories, and 
 | Pan with the keyboard | Focus the timeline region, then use Left/Right; Home restores the overview |
 | Move between records | Inspector **Previous/Next**, or Left/Right while the event heading has focus |
 | Collapse or reopen details | Arrow on the inspector’s left edge; Escape collapses and returns focus to the selected record |
+| Resize details | Drag the left rail below the arrow; Left/Right keys resize, Home/End select width limits, and double-click resets |
 | Exit presentation | **Exit presentation**, or Escape when no inspector is open |
 | Print | **Print current view** |
+
+The inspector overlaps the timeline and retains its width when collapsed. Opening or resizing it does not change the chart scale. Captions follow their event markers; groups retain their membership during panning except for records entering or leaving the date window. Zooming can merge or split groups as date density changes. Labels near the right boundary stay inside the plot.
 
 Shift + mouse-wheel also pans the timeline. Search, selected categories, and the displayed dates remain visible so a filtered or partial view is identifiable.
 
@@ -57,7 +60,7 @@ npm run build
 npm test
 ```
 
-The 25 automated tests cover synthetic-data integrity, preservation of the dataset, date handling, range movement and edge-resizing bounds, complete clustering, search, medication evidence, stop-cap placement, and generated-output boundaries. The build adds TypeScript checking. Browser interaction, visual review, accessibility review, printing, and offline operation require separate checks; a successful build is not a claim of full WCAG conformance or clinical validation.
+The 29 automated tests cover synthetic-data integrity, preservation of the dataset, date handling, range movement and edge-resizing bounds, complete clustering, stable pan behavior, caption alignment, inspector width bounds, concise labels, search, medication evidence, stop-cap placement, and generated-output boundaries. The build adds TypeScript checking. Browser interaction, visual review, accessibility review, printing, and offline operation require separate checks; a successful build is not a claim of full WCAG conformance or clinical validation.
 
 The Vite build inlines the application, styles, and bundled IBM Plex fonts into two matching output targets:
 
@@ -75,6 +78,8 @@ This remains a static React/TypeScript application built with Vite. There is no 
 | `app/clinical-data.ts` | Synthetic patient profile, encounters, and medication evidence |
 | `app/timeline-model.ts` | Calendar ranges, search, grouping, and evidence interpretation |
 | `app/page.tsx` | Timeline, ledger, controls, and collapsible record inspector |
+| `app/event-captions.ts` | Concise timeline captions, separate from full record titles |
+| `app/inspector-resize.tsx` | Pointer and keyboard controls for inspector width |
 | `app/activity-overview.tsx` | Pointer and keyboard controls for moving and resizing the visible period |
 | `app/globals.css` / `app/fonts.css` | Responsive visual system and embedded fonts |
 | `scripts/inline-build.mjs` | Pages and offline output generation |

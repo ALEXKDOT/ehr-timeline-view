@@ -43,9 +43,9 @@
   .is-dragging,.is-dragging *{user-select:none}
   .dragging-move .window-drag-area{cursor:grabbing;background:#507caf1a}
   .dragging-start .start-handle,.dragging-end .end-handle{background:#bdcee6}
-  .workspace-body{--pane-height:max(400px,calc(100dvh - 348px));position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:stretch;overflow:hidden}
+  .workspace-body{--pane-height:max(400px,calc(100dvh - 348px));position:relative;display:grid;grid-template-columns:minmax(0,1fr) 28px;align-items:stretch;overflow:hidden}
   .workspace-body .timeline-chart,.workspace-body .chronology-ledger{height:var(--pane-height);min-height:0;max-height:none}
-  .inspector-sidebar{display:grid;grid-template-columns:28px minmax(0,1fr);width:348px;height:var(--pane-height);min-width:0;background:#f9faf9}
+  .inspector-sidebar{display:grid;grid-template-columns:28px minmax(0,1fr);width:var(--inspector-width,348px);height:var(--pane-height);min-width:0;background:#f9faf9;grid-column:2;grid-row:1;z-index:25}
   .inspector-sidebar.sidebar-collapsed{width:28px;grid-template-columns:28px}
   .inspector-rail{border-left:1px solid #b6c5cf;background:#edf1f4;position:relative}
   .inspector-toggle{position:sticky;top:0;width:27px;height:44px;min-height:44px;border:0;border-bottom:1px solid #bbcbd6;border-radius:0;padding:0;font-size:20px;color:#315b83;background:#e3ebf2;z-index:20;display:grid;place-items:center}
@@ -56,11 +56,10 @@
   .inspector-sidebar .inspector-top{position:sticky;top:0;min-height:33px;padding:0 14px}
   .presentation-mode .workspace-body{--pane-height:max(400px,calc(100dvh - 311px))}
 }
-@media screen and (min-width:1700px){.inspector-sidebar{width:393px}}
+
 @media screen and (max-width:1049px){
   .workspace-body{grid-template-columns:minmax(0,1fr) 28px}
   .inspector-sidebar{grid-column:2;grid-row:1;z-index:25}
-  .inspector-sidebar.sidebar-expanded{position:absolute;grid-column:1 / -1;right:0;top:0;bottom:0;width:min(380px,100%);box-shadow:-8px 0 22px #263a4726}
   .inspector-sidebar .record-inspector{height:100%;max-height:100%;overflow-y:auto}
 }
 @media screen and (max-width:700px){
@@ -71,7 +70,6 @@
   .window-handle{width:22px;top:-4px;bottom:-4px}
   .activity-bars{gap:2px}
   .workspace-body{--pane-height:max(360px,calc(100dvh - 342px))}
-  .inspector-sidebar.sidebar-expanded{width:100%;max-width:390px}
   .inspector-sidebar .inspector-content{padding:18px 13px}
   .presentation-mode .workspace-body{--pane-height:max(360px,calc(100dvh - 300px))}
 }
@@ -87,3 +85,14 @@
 .medication-span.stop-cap>span{padding:0;font:600 14px var(--mono)}
 .medication-span.stop-cap:hover:not(:disabled){background:#ebbfbc}
 .medication-key .stop-key{display:inline-grid;place-items:center;width:17px;height:13px;border:1px solid #b77572;border-radius:0 2px 2px 0;background:#f4d8d7;color:#843b37;font:600 12px/10px var(--mono)}
+
+/* The inspector overlays the chart, so opening and resizing never alter its scale. */
+@media screen {
+  .inspector-sidebar.sidebar-expanded{position:absolute;grid-column:1 / -1;right:0;top:0;bottom:0;width:min(var(--inspector-width,348px),100%);box-shadow:-8px 0 22px #263a4726}
+  .inspector-resize-handle{position:absolute;inset:44px 0 0;cursor:ew-resize;touch-action:none;user-select:none;display:flex;justify-content:center;align-items:center;outline-offset:-3px}
+  .inspector-resize-handle>span:first-child{width:5px;height:38px;border-left:1px solid #7f96a7;border-right:1px solid #7f96a7;pointer-events:none}
+  .inspector-resize-handle:hover,.inspector-resize-handle.is-resizing{background:#d5e1eb}
+  .workspace-body:has(.is-resizing),.workspace-body:has(.is-resizing) *{cursor:ew-resize!important;user-select:none}
+}
+.event-mark{border:0;min-width:3px}
+.event-label{padding-right:3px}
