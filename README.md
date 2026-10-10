@@ -37,7 +37,7 @@ Shift + mouse-wheel also pans the timeline. Search, selected categories, and the
 
 ## Read medication evidence carefully
 
-Medication tracks distinguish **orders/prescriptions**, **patient-reported use**, **documented inpatient administration**, and **plans or instructions** through labels, symbols, and line patterns. Hold, stop, access, and supply instructions retain their specific meaning in the inspector. Fill information appears only where stated in the fictional narrative; it is not inferred from an order.
+Medication tracks show **orders/prescriptions**, **documented inpatient administration**, and **plans or instructions**. Explicit stop instructions appear as small red X end caps on the dose row. Patient-reported use remains available in the inspector and is omitted from the timeline. Hold, stop, access, and supply instructions retain their specific meaning in the inspector. Fill information appears only where stated in the fictional narrative; it is not inferred from an order.
 
 A bar represents a recorded interval, not verified continuous use. A point represents single-date evidence. An interval reaching the record boundary does not establish discontinuation. Temporal proximity does not establish causation, and a blank interval does not establish absence of care.
 
@@ -57,7 +57,7 @@ npm run build
 npm test
 ```
 
-The 22 automated tests cover synthetic-data integrity, preservation of the dataset, date handling, range movement and edge-resizing bounds, complete clustering, search, medication evidence, and generated-output boundaries. The build adds TypeScript checking. Browser interaction, visual review, accessibility review, printing, and offline operation require separate checks; a successful build is not a claim of full WCAG conformance or clinical validation.
+The 25 automated tests cover synthetic-data integrity, preservation of the dataset, date handling, range movement and edge-resizing bounds, complete clustering, search, medication evidence, stop-cap placement, and generated-output boundaries. The build adds TypeScript checking. Browser interaction, visual review, accessibility review, printing, and offline operation require separate checks; a successful build is not a claim of full WCAG conformance or clinical validation.
 
 The Vite build inlines the application, styles, and bundled IBM Plex fonts into two matching output targets:
 

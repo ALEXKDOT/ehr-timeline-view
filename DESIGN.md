@@ -54,7 +54,7 @@ Use standard encounter names, clinical topics and factual summaries. Avoid sloga
 - Bounded calendar groups show their record count and reveal every member. Grouping changes presentation, not source dates or record membership.
 - Search and category changes retain the date window. Visible counts distinguish records in view, matching records, and total records.
 - The inspector separates the clinical summary from the complete fictional source narrative. Provenance exposes the internal record ID and calendar-day precision; missing occurrence/authored/signed timestamps remain explicitly unavailable.
-- Medication evidence uses solid order bands, dashed patient-report bands, patterned administration bands, and dotted plan/instruction bands. Single-date evidence remains a point. A marked record boundary is not a stop date.
+- Medication evidence uses solid order bands, patterned administration bands, and dotted plan/instruction bands. Patient reports appear only in the inspector. Explicit stop instructions use red X end caps aligned with the dose row, joined to a same-day or preceding-day dose interval when one exists. Stops without a displayed dose remain standalone rectangular caps; gaps are never bridged. Other single-date instructions remain points. A marked record boundary is not a stop date.
 - Fills remain narrative evidence where supplied. Orders, instructions, reports, and administration are not interchangeable. Related mentions support navigation only; no graphic establishes adherence or causation.
 
 ## Interaction and responsive behavior
@@ -71,7 +71,7 @@ Motion is limited to brief state feedback. Reduced-motion styling removes animat
 
 Require meaningful control names, visible keyboard focus, semantic regions, redundant category/evidence cues, and usable disclosure and empty states. Review contrast, text scaling, clipped content, keyboard order, focus recovery, and touch operation in the rendered application. A resized screenshot proves layout, not touch behavior. Keep viewport and physical-device evidence distinct.
 
-The project has 22 automated data/model/build-boundary tests. Visual, browser, print, offline, and assistive-technology checks are separate work; this document does not assert complete WCAG conformance, clinical validation, or production readiness.
+The project has 25 automated data/model/build-boundary tests. Visual, browser, print, offline, and assistive-technology checks are separate work; this document does not assert complete WCAG conformance, clinical validation, or production readiness.
 
 ## Free resources actually used
 

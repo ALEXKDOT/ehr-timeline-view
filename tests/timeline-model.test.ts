@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import test from "node:test";
 import { events, medications, patient, categoryMeta, type Category, type TimelineEvent } from "../app/clinical-data.ts";
 import { DAY, stamp, isoDate, formatDate, fullRange, clampRange, zoomRange, panRange, adjustOverviewRange,
-  filterEvents, groupEvents, medicationEvidence, relatedMedicationEvents } from "../app/timeline-model.ts";
+  filterEvents, groupEvents, medicationEvidence, medicationTimelineItems, relatedMedicationEvents } from "../app/timeline-model.ts";
 
 const categories = Object.keys(categoryMeta) as Category[];
 
@@ -161,4 +161,50 @@ test("related medication records are conservative mention matches, with original
   assert.ok(related.every((event, index) => index === 0 || related[index - 1].date <= event.date));
   const absent = { ...metformin, name: "Synthetic nonexistent medicine", generic: "unrecorded generic fixture" };
   assert.equal(relatedMedicationEvents(absent).length, 0);
+});
+
+
+test("medication tracks omit all patient reports while retaining source indices and records", () => {
+  const before = JSON.stringify(medications);
+  const items = medications.flatMap(medicationTimelineItems);
+  assert.equal(items.length, 21);
+  assert.ok(items.every(item => item.segment.status !== "reported"));
+  for (const medication of medications) {
+    for (const item of medicationTimelineItems(medication)) {
+      assert.equal(item.segment, medication.segments[item.index]);
+      assert.equal(item.start, stamp(item.segment.start));
+      assert.equal(item.end, stamp(item.segment.end ?? item.segment.start));
+    }
+  }
+  assert.equal(JSON.stringify(medications), before);
+});
+
+test("only explicit stop instructions become caps, joined to adjacent dose intervals", () => {
+  const stops = medications.flatMap(medication => medicationTimelineItems(medication)
+    .filter(item => item.kind === "stop").map(item => ({ name: medication.name, date: isoDate(item.start) })));
+  assert.deepEqual(stops, [
+    { name: "Budesonide inhaler", date: "2026-03-14" },
+    { name: "Ipratropium–albuterol", date: "2026-03-14" },
+    { name: "Insulin lispro", date: "2026-03-14" },
+  ]);
+  for (const name of ["Ipratropium–albuterol", "Insulin lispro"]) {
+    const items = medicationTimelineItems(medications.find(medication => medication.name === name)!);
+    assert.equal(items.find(item => item.kind === "dose")!.plotEnd, items.find(item => item.kind === "stop")!.start);
+  }
+  const budesonide = medicationTimelineItems(medications.find(medication => medication.name === "Budesonide inhaler")!);
+  assert.equal(budesonide.length, 1, "a hidden patient report must not be converted into a prescription bar");
+  assert.equal(budesonide[0].kind, "stop");
+});
+
+test("stop caps do not extend dosing across an unrecorded gap or turn other plans into stops", () => {
+  const medication = medications.find(medication => medication.name === "Insulin lispro")!;
+  const distant = { ...medication, segments: medication.segments.map(segment =>
+    segment.status === "inpatient" ? { ...segment, start: "2026-03-09", end: "2026-03-10" } : segment) };
+  const dose = medicationTimelineItems(distant).find(item => item.kind === "dose")!;
+  assert.equal(dose.plotEnd, dose.end);
+  const plans = medications.flatMap(medicationTimelineItems).filter(item => item.kind === "instruction");
+  assert.equal(plans.length, 4);
+  assert.ok(plans.every(item => medicationEvidence(item.segment).label !== "Stop instruction"));
+  const ongoing = medications.flatMap(medicationTimelineItems).filter(item => item.segment.end === patient.endDate);
+  assert.ok(ongoing.every(item => item.kind === "dose" && item.plotEnd === item.end));
 });

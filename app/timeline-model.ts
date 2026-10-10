@@ -131,6 +131,35 @@ export function medicationEvidence(segment: MedicationSegment): { label: string;
   return { label: "Recorded plan", symbol: "◇", description: "An intended treatment decision, not evidence that the plan was carried out." };
 }
 
+export type MedicationTimelineItem = {
+  segment: MedicationSegment;
+  index: number;
+  start: number;
+  end: number;
+  plotEnd: number;
+  kind: 'dose' | 'instruction' | 'stop';
+};
+
+/** Timeline presentation only; source evidence and inspector indices remain intact. */
+export function medicationTimelineItems(medication: Medication): MedicationTimelineItem[] {
+  const items = medication.segments.flatMap((segment, index): MedicationTimelineItem[] => {
+    if (segment.status === 'reported') return [];
+    const start = stamp(segment.start);
+    const end = stamp(segment.end ?? segment.start);
+    const kind = medicationEvidence(segment).label === 'Stop instruction' ? 'stop'
+      : segment.status === 'planned' ? 'instruction' : 'dose';
+    return [{ segment, index, start, end, plotEnd: end, kind }];
+  });
+  for (const stop of items.filter(item => item.kind === 'stop')) {
+    // An interval through the previous calendar day can meet the stop cap at the
+    // next day's boundary. Do not bridge an unrecorded gap or infer another dose.
+    const dose = items.filter(item => item.kind === 'dose' && item.end <= stop.start && stop.start - item.end <= DAY)
+      .sort((a, b) => b.end - a.end || b.start - a.start)[0];
+    if (dose) dose.plotEnd = stop.start;
+  }
+  return items;
+}
+
 function normalizedWords(value: string): string {
   return value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("en-US")
     .replace(/[^a-z0-9]+/g, " ").trim();
