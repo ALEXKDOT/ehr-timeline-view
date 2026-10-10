@@ -44,6 +44,10 @@ Use a compact type scale, clear weight changes, and readable line spacing rather
 
 Category codes, labels, and evidence patterns supplement color. These colors identify information types; they do not rank clinical outcomes as good or bad.
 
+## Language
+
+Use standard encounter names, clinical topics and factual summaries. Avoid slogans, narrative arcs, motivational headings and editorial interpretations of patient outcomes. Empty states describe the current state or next action. Preserve the wording of source records, patient statements and medication evidence.
+
 ## Timeline and evidence conventions
 
 - All tracks use a linear calendar scale. The activity overview marks the displayed window within the complete record.

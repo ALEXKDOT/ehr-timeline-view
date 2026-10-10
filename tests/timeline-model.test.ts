@@ -1,16 +1,20 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
 import test from "node:test";
-import { events, medications, categoryMeta, type Category, type TimelineEvent } from "../app/clinical-data.ts";
+import { events, medications, patient, categoryMeta, type Category, type TimelineEvent } from "../app/clinical-data.ts";
 import { DAY, stamp, isoDate, formatDate, fullRange, clampRange, zoomRange, panRange,
   filterEvents, groupEvents, medicationEvidence, relatedMedicationEvents } from "../app/timeline-model.ts";
 
 const categories = Object.keys(categoryMeta) as Category[];
 
-test("the UX rebuild preserves the entire source dataset byte for byte", () => {
-  const data = readFileSync(new URL("../app/clinical-data.ts", import.meta.url));
-  assert.equal(createHash("sha256").update(data).digest("hex"), "7973f092c4c0d30d40c8e8c16f694b3823dde86d18696c1ff07a50e5a02d3a04");
+test("label edits preserve clinical records, chronology and medication evidence", () => {
+  const { summary, subtitle, ...profile } = patient;
+  const clinical = {
+    patient: profile,
+    events: events.map(({ title, short, summary, ...record }) => record),
+    medications: medications.map(({ summary, ...medication }) => medication),
+  };
+  assert.equal(createHash("sha256").update(JSON.stringify(clinical)).digest("hex"), "ee06f57c2f6cc301e6b2f870b623f11705d00c8551c8ee0a8397a4ecb98c9d29");
 });
 
 test("calendar-day helpers do not invent timestamps or roll invalid dates into another day", () => {
